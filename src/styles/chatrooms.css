@@ -678,18 +678,20 @@
 .search-member-container {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 8px;
+  margin-bottom: 12px;
+  max-width: 100%;
 }
 
 .search-input-wrapper {
   position: relative;
   width: 100%;
+  max-width: 100%;
 }
 
 .search-member-input {
   width: 100%;
-  padding: 10px 12px;
+  padding: 8px 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 0.9rem;
@@ -811,10 +813,11 @@
   display: flex;
   justify-content: flex-end;
   margin-top: 5px;
+  width: 100%;
 }
 
 .add-member-form button {
-  padding: 8px 15px;
+  padding: 6px 12px;
   background-color: #4caf50;
   color: white;
   border: none;
@@ -822,13 +825,67 @@
   cursor: pointer;
   font-size: 0.85rem;
   transition: background-color 0.2s;
+  white-space: nowrap;
 }
 
-.add-member-form button:hover {
-  background-color: #3d8b40;
+/* Responsive adjustments for the settings panel */
+@media (max-width: 768px) {
+  .settings-panel {
+    width: 280px;
+  }
+  
+  .settings-content {
+    padding: 15px;
+  }
+  
+  .search-member-input {
+    padding: 7px 8px;
+    font-size: 0.85rem;
+  }
+  
+  .add-member-form button {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+  }
 }
 
-.add-member-form button:disabled {
-  background-color: #a5d6a7;
-  cursor: not-allowed;
+@media (max-width: 480px) {
+  .settings-panel {
+    width: 90%;
+    max-width: 280px;
+  }
+  
+  .settings-content {
+    padding: 12px;
+  }
+  
+  .search-member-container {
+    gap: 6px;
+  }
+  
+  .search-member-input {
+    padding: 6px 8px;
+    font-size: 0.8rem;
+  }
+  
+  .search-results {
+    max-height: 180px;
+  }
+  
+  .search-result-item {
+    padding: 8px 10px;
+  }
+  
+  .search-avatar, .search-avatar-placeholder {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .user-name {
+    font-size: 0.85rem;
+  }
+  
+  .user-email {
+    font-size: 0.75rem;
+  }
 }
