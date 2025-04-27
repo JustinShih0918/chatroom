@@ -308,7 +308,7 @@ function Chatrooms() {
                             {messages.length === 0 ? (
                                 <div className="no-messages">
                                     <i className="bi bi-chat-left-text message-icon"></i>
-                                    No messages yet. Be the first to send a message!
+                                    Be the first to send a message!
                                 </div>
                             ) : (
                                 <>
