@@ -1,19 +1,16 @@
-import React from "react";
 import { Routes, Route } from "react-router-dom";
-import HomePage from "./components/homepage";
-import { Auth } from "./components/auth";
-import { Database } from "./components/database";
+import HomePage from "./components/HomePage";
 import Chatrooms from "./components/Chatrooms";
+import UserProfile from "./components/UserProfile";
 
 function App() {
-    return (
-        <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/authentication" element={<Auth />} />
-            <Route path="/database" element={<Database />} />
-            <Route path="/chatrooms" element={<Chatrooms />} />
-        </Routes>
-    );
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/chatrooms" element={<Chatrooms />} />
+      <Route path="/profile" element={<UserProfile />} />
+    </Routes>
+  );
 }
 
 export default App;
