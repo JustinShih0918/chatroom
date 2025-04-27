@@ -170,7 +170,8 @@
   color: #666;
 }
 
-/* Responsive styles for layout */
+/* Enhanced responsive styles for layout */
+
 @media (max-width: 900px) {
   .chatrooms-container {
     flex-direction: column;
@@ -179,15 +180,156 @@
   .sidebar {
     width: 100%;
     height: 300px;
+    min-height: 250px;
+    max-height: 30vh;
+  }
+  
+  .chat-area {
+    height: calc(100vh - 300px); /* Remaining height */
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .messages-container {
+    flex: 1;
+    min-height: 100px; /* Ensure there's always space for messages */
+  }
+  
+  /* Ensure message input is always visible */
+  .message-input-form {
+    position: relative;
+    padding: 10px;
+    border-top: 1px solid #e0e0e0;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    height: 250px;
+    max-height: 25vh;
+  }
+  
+  .chat-area {
+    height: calc(100vh - 250px);
+  }
+  
+  .chatroom-item {
+    padding: 10px 12px;
+  }
+  
+  .message-input-form input {
+    height: 40px;
+    min-height: 40px;
   }
 }
 
 @media (max-width: 600px) {
+  .sidebar {
+    height: 200px;
+    max-height: 25vh;
+  }
+  
+  .chat-area {
+    height: calc(100vh - 200px);
+  }
+  
   .sidebar-header {
-    padding: 15px;
+    padding: 12px 15px;
   }
   
   .sidebar-header h2 {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
+  }
+  
+  .new-chatroom-button {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+  
+  .chatroom-list {
+    padding: 10px;
+    gap: 8px;
+  }
+  
+  .user-controls {
+    padding: 10px;
+  }
+  
+  /* Ensure message input remains visible and usable */
+  .message-input-form {
+    padding: 8px;
+    gap: 8px;
+  }
+  
+  .message-input-form input {
+    padding: 8px 10px;
+    font-size: 0.9rem;
+    height: 36px;
+    min-height: 36px;
+  }
+  
+  .message-input-form button {
+    padding: 0 12px;
+    min-width: 60px;
+    height: 36px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .sidebar {
+    height: 180px;
+    max-height: 20vh;
+  }
+  
+  .chat-area {
+    height: calc(100vh - 180px);
+  }
+  
+  /* Optimize chatroom list for very small screens */
+  .chatroom-item h3 {
+    font-size: 0.9rem;
+    margin-bottom: 3px;
+  }
+  
+  .chatroom-item p {
+    font-size: 0.8rem;
+  }
+  
+  /* More compact input form */
+  .message-input-form {
+    padding: 6px;
+    gap: 6px;
+  }
+  
+  .message-input-form input {
+    padding: 6px 8px;
+    height: 34px;
+    min-height: 34px;
+  }
+  
+  .message-input-form button {
+    padding: 0 10px;
+    min-width: 50px;
+    height: 34px;
+    font-size: 0.85rem;
+  }
+  
+  /* Ensure fixed position input if space is limited */
+  @media (max-height: 450px) {
+    .message-input-form {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: white;
+      box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+      z-index: 10;
+    }
+    
+    .messages-container {
+      padding-bottom: 46px; /* Make room for the fixed input */
+    }
   }
 }
