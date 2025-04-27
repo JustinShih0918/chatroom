@@ -110,7 +110,25 @@ export const sendMessage = async (chatroomId, text) => {
 
 // Add a member to a chatroom by email
 export const addMemberToChatroom = async (chatroomId, email) => {
-  // First get the user ID from the email
+  const currentUser = auth.currentUser;
+  if (!currentUser) throw new Error("You must be logged in");
+  
+  // First verify that the current user is a member of the chatroom
+  const chatroomRef = ref(db, `chatrooms/${chatroomId}`);
+  const chatroomSnapshot = await get(chatroomRef);
+  
+  if (!chatroomSnapshot.exists()) {
+    throw new Error("Chatroom not found");
+  }
+  
+  const chatroom = chatroomSnapshot.val();
+  
+  // Check if current user is a member
+  if (!chatroom.members || !chatroom.members[currentUser.uid]) {
+    throw new Error("You must be a member of this chatroom to add others");
+  }
+  
+  // Find user by email
   const usersRef = ref(db, "users");
   const snapshot = await get(query(usersRef));
   
@@ -126,6 +144,12 @@ export const addMemberToChatroom = async (chatroomId, email) => {
     throw new Error("User not found. Make sure they have registered.");
   }
   
+  // Check if user is already a member
+  if (chatroom.members && chatroom.members[userId]) {
+    throw new Error("User is already a member of this chatroom");
+  }
+  
+  // Add the member
   const memberRef = ref(db, `chatrooms/${chatroomId}/members/${userId}`);
   await set(memberRef, true);
   return true;
