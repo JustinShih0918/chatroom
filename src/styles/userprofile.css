@@ -11,17 +11,33 @@
   margin-bottom: 30px;
 }
 
+/* Update the back-button style to make it more visible */
 .back-button {
-  background: none;
-  border: none;
-  color: #555;
-  font-size: 0.9rem;
+  background-color: #f0f4ff;
+  border: 1px solid #d0d9f0;
+  color: #4285f4;
+  font-size: 0.95rem;
+  font-weight: 500;
   cursor: pointer;
-  padding: 5px 0;
+  padding: 8px 15px;
   display: flex;
   align-items: center;
-  gap: 5px;
-  margin-bottom: 10px;
+  gap: 7px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.back-button:hover {
+  background-color: #e4ebff;
+  color: #3367d6;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.back-button i {
+  font-size: 1.1rem;
+  margin-right: 2px;
 }
 
 .profile-header h1 {
@@ -146,8 +162,64 @@
   margin-bottom: 20px;
 }
 
-/* Add these styles for profile picture selection */
+/* Add these new styles and update existing ones */
 
+.profile-details {
+  margin-bottom: 20px;
+}
+
+.form-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.half-width {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.form-hint {
+  display: block;
+  color: #888;
+  font-size: 0.8rem;
+  margin-top: 5px;
+}
+
+textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+/* Responsive updates */
+@media (max-width: 600px) {
+  .form-row {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .half-width {
+    width: 100%;
+    margin-bottom: 0;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  textarea {
+    min-height: 80px;
+  }
+}
+
+/* Add these styles to fix the profile pictures grid */
+
+/* Button styling */
 .image-selection-button {
   background-color: #f5f5f5;
   color: #555;
@@ -167,22 +239,34 @@
   background-color: #e0e0e0;
 }
 
+/* Grid container */
 .profile-pictures-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  margin-top: 15px;
   width: 100%;
+  max-width: 300px;
+  margin: 0 auto 15px;
 }
 
+/* Individual picture options */
 .profile-picture-option {
+  width: 80px;
+  height: 80px;
   border-radius: 8px;
   cursor: pointer;
   overflow: hidden;
-  position: relative;
-  aspect-ratio: 1/1;
   border: 2px solid transparent;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+}
+
+.profile-picture-option:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.profile-picture-option.selected {
+  border-color: #4285f4;
 }
 
 .profile-picture-option img {
@@ -191,31 +275,15 @@
   object-fit: cover;
 }
 
-.profile-picture-option:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.profile-picture-option.selected {
-  border-color: #4285f4;
-  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.3);
-}
-
-@media (max-width: 600px) {
-  .profile-container {
-    padding: 15px;
-  }
-  
-  .profile-form {
-    padding: 20px;
-  }
-  
-  .profile-image-container {
-    width: 100px;
-    height: 100px;
-  }
-  
+/* Responsive adjustments */
+@media (max-width: 400px) {
   .profile-pictures-grid {
     grid-template-columns: repeat(2, 1fr);
+    max-width: 180px;
+  }
+  
+  .profile-picture-option {
+    width: 70px;
+    height: 70px;
   }
 }
