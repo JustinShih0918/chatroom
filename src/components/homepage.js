@@ -4,11 +4,13 @@ import {
     signInWithEmailAndPassword, 
     createUserWithEmailAndPassword,
     GoogleAuthProvider,
-    signInWithPopup,
-    signInWithRedirect
+    signInWithPopup
 } from "firebase/auth";
-import { auth } from "../config";
+import { ref, set, serverTimestamp } from "firebase/database";
+import { auth, db } from "../config";
 import "../styles/homepage.css";
+// Import Bootstrap icons
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 function HomePage() {
     const [activeTab, setActiveTab] = useState("signin");
@@ -45,7 +47,17 @@ function HomePage() {
         setLoading(true);
         
         try {
-            await createUserWithEmailAndPassword(auth, email, password);
+            // Create user
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            
+            // Store user data in the database
+            await set(ref(db, `users/${user.uid}`), {
+                email: user.email,
+                displayName: user.email.split('@')[0],
+                createdAt: serverTimestamp()
+            });
+            
             navigate("/chatrooms");
         } catch (error) {
             setError("Failed to create account: " + error.message);
@@ -61,7 +73,17 @@ function HomePage() {
         const provider = new GoogleAuthProvider();
         
         try {
-            await signInWithPopup(auth, provider);
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+            
+            // Store or update user data
+            await set(ref(db, `users/${user.uid}`), {
+                email: user.email,
+                displayName: user.displayName || user.email.split('@')[0],
+                photoURL: user.photoURL,
+                createdAt: serverTimestamp()
+            });
+            
             navigate("/chatrooms");
         } catch (error) {
             setError("Google sign-in failed: " + error.message);
@@ -137,11 +159,8 @@ function HomePage() {
                                 onClick={handleGoogleSignIn}
                                 disabled={loading}
                             >
-                                <img 
-                                    src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" 
-                                    alt="Google"
-                                    className="google-icon"
-                                />
+                                {/* Replace the img with Bootstrap icon */}
+                                <i className="bi bi-google google-icon"></i>
                                 Sign in with Google
                             </button>
                         </>

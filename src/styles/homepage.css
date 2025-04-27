@@ -23,6 +23,12 @@
     margin-bottom: 30px;
 }
 
+.google-icon {
+    font-size: 1.2rem;
+    margin-right: 10px;
+    color: #4285F4;
+}
+
 .home-header h1 {
     font-size: 2rem;
     color: #333;
