@@ -9,7 +9,9 @@ import {
     sendMessage, 
     addMemberToChatroom, 
     leaveChatroom,
-    getChatroomMembers 
+    getChatroomMembers,
+    searchUsers,
+    listenToChatroomMembers,
 } from "../components/chatroomService";
 import "../styles/chatrooms.css";
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -71,19 +73,17 @@ function Chatrooms() {
     
     // Fetch members when active chatroom changes or settings panel opens
     useEffect(() => {
+        let unsubscribe = null;
+        
         if (activeChatroom && showSettingsPanel) {
-            const fetchMembers = async () => {
-                try {
-                    const memberData = await getChatroomMembers(activeChatroom.id);
-                    setMembers(memberData);
-                } catch (error) {
-                    console.error("Error fetching members", error);
-                    setError("Failed to load members");
-                }
-            };
-            
-            fetchMembers();
+            unsubscribe = listenToChatroomMembers(activeChatroom.id, (memberData) => {
+                setMembers(memberData);
+            });
         }
+        
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
     }, [activeChatroom, showSettingsPanel]);
     
     const handleSignOut = async () => {
@@ -122,14 +122,60 @@ function Chatrooms() {
         }
     };
     
+    const [searchTerm, setSearchTerm] = useState("");
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+    
+    const handleSearch = async (term) => {
+        setSearchTerm(term);
+        
+        if (term.trim().length < 2) {
+            setSearchResults([]);
+            return;
+        }
+        
+        setIsSearching(true);
+        try {
+            const results = await searchUsers(term);
+            
+            // Filter out users who are already members
+            if (activeChatroom && members.length > 0) {
+                const filteredResults = results.filter(user => 
+                    !members.some(member => member.uid === user.uid)
+                );
+                setSearchResults(filteredResults);
+            } else {
+                setSearchResults(results);
+            }
+        } catch (error) {
+            console.error("Search error:", error);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+    
+    const handleSelectUser = async (user) => {
+        try {
+            setError("");
+            await addMemberToChatroom(activeChatroom.id, user.email);
+            setSearchTerm("");
+            setSearchResults([]);
+            setError("Member added successfully!");
+            setTimeout(() => setError(""), 3000);
+        } catch (error) {
+            setError("Failed to add member: " + error.message);
+        }
+    };
+    
     const handleAddMember = async (e) => {
         e.preventDefault();
-        if (!newMemberEmail.trim() || !activeChatroom) return;
+        if (!searchTerm.trim() || !activeChatroom) return;
         
         try {
             setError("");
-            await addMemberToChatroom(activeChatroom.id, newMemberEmail);
-            setNewMemberEmail("");
+            await addMemberToChatroom(activeChatroom.id, searchTerm);
+            setSearchTerm("");
+            setSearchResults([]);
             setError("Member added successfully!");
             setTimeout(() => setError(""), 3000);
         } catch (error) {
@@ -347,16 +393,68 @@ function Chatrooms() {
                     
                     <div className="settings-section">
                         <h4>Add Member</h4>
-                        <form className="add-member-form" onSubmit={handleAddMember}>
-                            <input
-                                type="email"
-                                placeholder="Add member by email"
-                                value={newMemberEmail}
-                                onChange={(e) => setNewMemberEmail(e.target.value)}
-                                required
-                            />
-                            <button type="submit">Add</button>
-                        </form>
+                        <div className="search-member-container">
+                            <div className="search-input-wrapper">
+                                <input
+                                    type="text"
+                                    className="search-member-input"
+                                    placeholder="Search by username or email"
+                                    value={searchTerm}
+                                    onChange={(e) => handleSearch(e.target.value)}
+                                />
+                                {isSearching && <div className="search-loading"><i className="bi bi-hourglass-split"></i></div>}
+                            </div>
+                            
+                            {searchResults.length > 0 && (
+                                <div className="search-results">
+                                    {searchResults.map(user => (
+                                        <div 
+                                            key={user.uid} 
+                                            className="search-result-item"
+                                            onClick={() => handleSelectUser(user)}
+                                        >
+                                            <div className="user-avatar">
+                                                {user.photoURL ? (
+                                                    <img 
+                                                        src={user.photoURL} 
+                                                        alt={user.displayName} 
+                                                        className="search-avatar"
+                                                    />
+                                                ) : (
+                                                    <div className="search-avatar-placeholder">
+                                                        <i className="bi bi-person"></i>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="user-details">
+                                                <div className="user-name">{user.displayName}</div>
+                                                <div className="user-email">{user.email}</div>
+                                            </div>
+                                            <button 
+                                                type="button" 
+                                                className="add-user-button"
+                                                aria-label="Add user"
+                                            >
+                                                <i className="bi bi-plus-circle"></i>
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            
+                            {searchTerm && searchResults.length === 0 && !isSearching && (
+                                <div className="no-results">No users found</div>
+                            )}
+                            
+                            <form className="add-member-form" onSubmit={handleAddMember}>
+                                <button 
+                                    type="submit" 
+                                    disabled={!searchTerm.trim() || searchTerm.length < 3}
+                                >
+                                    Add by Email
+                                </button>
+                            </form>
+                        </div>
                     </div>
                     
                     <div className="settings-section danger-zone">

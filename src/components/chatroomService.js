@@ -225,3 +225,77 @@ export const getChatroomMembers = async (chatroomId) => {
   
   return members;
 };
+
+// Add this new function
+export const listenToChatroomMembers = (chatroomId, callback) => {
+  const membersRef = ref(db, `chatrooms/${chatroomId}/members`);
+  
+  const unsubscribe = onValue(membersRef, async (snapshot) => {
+    if (!snapshot.exists()) {
+      callback([]);
+      return;
+    }
+    
+    const memberIds = Object.keys(snapshot.val() || {});
+    const members = [];
+    
+    // Get each member's data
+    for (const uid of memberIds) {
+      const userRef = ref(db, `users/${uid}`);
+      const userSnapshot = await get(userRef);
+      
+      if (userSnapshot.exists()) {
+        const userData = userSnapshot.val();
+        members.push({
+          uid,
+          email: userData.email,
+          displayName: userData.displayName || userData.email.split('@')[0],
+          photoURL: userData.photoURL || null
+        });
+      }
+    }
+    
+    callback(members);
+  });
+  
+  return unsubscribe;
+};
+
+// Add this function to search users by username or email
+export const searchUsers = async (searchTerm) => {
+  if (!searchTerm || searchTerm.trim().length < 2) {
+    return [];
+  }
+  
+  searchTerm = searchTerm.toLowerCase().trim();
+  const user = auth.currentUser;
+  if (!user) throw new Error("User must be logged in");
+  
+  const usersRef = ref(db, "users");
+  const snapshot = await get(usersRef);
+  
+  const results = [];
+  
+  snapshot.forEach((childSnapshot) => {
+    const userData = childSnapshot.val();
+    const uid = childSnapshot.key;
+    
+    // Don't include the current user in search results
+    if (uid === user.uid) return;
+    
+    // Search in username (displayName) and email
+    const displayName = (userData.displayName || "").toLowerCase();
+    const email = (userData.email || "").toLowerCase();
+    
+    if (displayName.includes(searchTerm) || email.includes(searchTerm)) {
+      results.push({
+        uid,
+        email: userData.email,
+        displayName: userData.displayName || userData.email.split('@')[0],
+        photoURL: userData.photoURL,
+      });
+    }
+  });
+  
+  return results;
+};
