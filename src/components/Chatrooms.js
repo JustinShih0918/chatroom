@@ -312,9 +312,24 @@ function Chatrooms() {
                                     {messages.map((message) => (
                                         <div 
                                             key={message.id}
-                                            className={`message ${message.userId === auth.currentUser?.uid ? 'own-message' : ''}`}
+                                            className={`message ${message.userId === auth.currentUser?.uid ? 'own-message' : 'other-message'}`}
                                         >
-                                            <div className="message-sender">{message.displayName}</div>
+                                            <div className="message-header">
+                                                <div className="message-avatar">
+                                                    {message.photoURL ? (
+                                                        <img 
+                                                            src={message.photoURL} 
+                                                            alt={message.displayName} 
+                                                            className="message-avatar-img" 
+                                                        />
+                                                    ) : (
+                                                        <div className="message-avatar-placeholder">
+                                                            <i className="bi bi-person"></i>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="message-sender">{message.displayName}</div>
+                                            </div>
                                             <div className="message-content">{message.text}</div>
                                             <div className="message-timestamp">
                                                 {message.timestamp ? new Date(message.timestamp).toLocaleString() : 'Sending...'}

@@ -47,6 +47,8 @@
   color: #333;
 }
 
+/* Enhanced RWD for chat messages */
+
 /* Messages container and message styling */
 .messages-container {
   flex: 1;
@@ -57,6 +59,24 @@
   gap: 10px;
 }
 
+/* Basic message layout */
+.message {
+  max-width: 70%;
+  padding: 10px 15px 8px;
+  border-radius: 18px;
+  position: relative;
+  background-color: #f1f1f1;
+  align-self: flex-start;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.message.own-message {
+  background-color: #d1e7ff;
+  align-self: flex-end;
+}
+
+/* Default message header (your own messages) */
 .message-header {
   display: flex;
   align-items: center;
@@ -64,12 +84,20 @@
   margin-bottom: 5px;
 }
 
+/* For other people's messages - avatar on RIGHT side */
+.message.other-message .message-header {
+  flex-direction: row-reverse; /* Move avatar to right */
+  justify-content: flex-start;
+}
+
+/* Keep avatar circular and styled */
 .message-avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .message-avatar-img {
@@ -89,25 +117,18 @@
   font-size: 1rem;
 }
 
-.message {
-  max-width: 70%;
-  padding: 10px 15px 8px;
-  border-radius: 18px;
-  position: relative;
-  background-color: #f1f1f1;
-  align-self: flex-start;
-}
-
-.message.own-message {
-  background-color: #d1e7ff;
-  align-self: flex-end;
-}
-
+/* Message sender name */
 .message-sender {
   font-weight: 600;
   font-size: 0.9rem;
+  flex: 1;
 }
 
+.message.other-message .message-sender {
+  text-align: right;
+}
+
+/* Message content */
 .message-content {
   word-break: break-word;
 }
@@ -119,6 +140,7 @@
   text-align: right;
 }
 
+/* Input form */
 .message-input-form {
   display: flex;
   padding: 15px;
@@ -143,43 +165,117 @@
   cursor: pointer;
 }
 
-/* Empty state messages */
-.no-messages,
-.no-chatrooms,
-.no-active-chatroom {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: #888;
-  text-align: center;
-}
-
-.no-active-chatroom {
-  padding: 20px;
-}
-
-/* Responsive styles for messages */
+/* Enhanced responsive design - additional breakpoints */
+/* Large screens (tablets) */
 @media (max-width: 900px) {
   .chat-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
   }
+  
+  .message {
+    max-width: 75%; /* Slightly wider messages */
+  }
 }
 
+/* Medium screens (large phones) */
+@media (max-width: 768px) {
+  .messages-container {
+    padding: 15px;
+  }
+  
+  .message {
+    max-width: 80%;
+  }
+  
+  .message-input-form {
+    padding: 12px;
+  }
+  
+  .message-input-form input {
+    padding: 10px;
+    font-size: 0.95rem;
+  }
+  
+  .message-input-form button {
+    padding: 0 15px;
+  }
+}
+
+/* Small screens (phones) */
 @media (max-width: 600px) {
+  .messages-container {
+    padding: 12px;
+    gap: 8px;
+  }
+  
+  .message {
+    max-width: 85%; /* Much wider messages on small screens */
+    padding: 8px 12px 6px;
+  }
+  
   .message-avatar {
     width: 28px;
     height: 28px;
   }
   
-  .message {
-    padding: 8px 12px 6px;
-  }
-  
   .message-header {
     gap: 6px;
+  }
+  
+  .message-sender {
+    font-size: 0.85rem;
+  }
+  
+  .message-content {
+    font-size: 0.95rem;
+  }
+  
+  .message-timestamp {
+    font-size: 0.75rem;
+  }
+  
+  .message-input-form {
+    padding: 10px;
+    gap: 8px;
+  }
+  
+  .message-input-form input {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+  
+  .message-input-form button {
+    padding: 0 12px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Very small screens (small phones) */
+@media (max-width: 400px) {
+  .messages-container {
+    padding: 10px;
+  }
+  
+  .message {
+    max-width: 90%; /* Almost full width on tiny screens */
+  }
+  
+  .message-avatar {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .message-avatar-placeholder {
+    font-size: 0.8rem;
+  }
+  
+  .message-input-form {
+    padding: 8px;
+  }
+  
+  .message-input-form input {
+    padding: 7px 10px;
   }
 }
