@@ -14,6 +14,8 @@ import {
     listenToChatroomMembers,
 } from "../components/chatroomService";
 import "../styles/chatrooms.css";
+import "../styles/messages.css";
+import "../styles/settings.css";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 function Chatrooms() {
