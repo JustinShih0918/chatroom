@@ -6,9 +6,9 @@ import {
     GoogleAuthProvider,
     signInWithPopup
 } from "firebase/auth";
-import { ref, set, serverTimestamp } from "firebase/database";
+import { ref, set, serverTimestamp, get, update } from "firebase/database";
 import { auth, db } from "../config";
-import "../styles/homepage.css";
+import "../styles/HomePage.css";
 // Import Bootstrap icons
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
@@ -36,6 +36,7 @@ function HomePage() {
         setLoading(false);
     };
 
+    // Update how users are created during sign up
     const handleSignUp = async (e) => {
         e.preventDefault();
         setError("");
@@ -51,11 +52,15 @@ function HomePage() {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             
-            // Store user data in the database
+            // Store user data in the database with additional fields
             await set(ref(db, `users/${user.uid}`), {
                 email: user.email,
                 displayName: user.email.split('@')[0],
-                createdAt: serverTimestamp()
+                photoURL: null,
+                age: null,
+                gender: "",
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
             });
             
             navigate("/chatrooms");
@@ -66,7 +71,7 @@ function HomePage() {
         setLoading(false);
     };
 
-    // Add Google Sign-In functions from auth.js
+    // Also update Google sign-in to include the same fields
     const handleGoogleSignIn = async () => {
         setError("");
         setLoading(true);
@@ -76,13 +81,27 @@ function HomePage() {
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
             
-            // Store or update user data
-            await set(ref(db, `users/${user.uid}`), {
-                email: user.email,
-                displayName: user.displayName || user.email.split('@')[0],
-                photoURL: user.photoURL,
-                createdAt: serverTimestamp()
-            });
+            // Get existing user data if any
+            const userRef = ref(db, `users/${user.uid}`);
+            const snapshot = await get(userRef);
+            
+            if (snapshot.exists()) {
+                // Update login timestamp if user exists
+                await update(userRef, {
+                    lastLogin: serverTimestamp()
+                });
+            } else {
+                // Store new user data
+                await set(userRef, {
+                    email: user.email,
+                    displayName: user.displayName || user.email.split('@')[0],
+                    photoURL: user.photoURL,
+                    age: null,
+                    gender: "",
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                });
+            }
             
             navigate("/chatrooms");
         } catch (error) {
