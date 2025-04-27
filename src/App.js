@@ -1,16 +1,18 @@
-import { Link } from "react-router-dom";
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import HomePage from "./components/homepage";
+import { Auth } from "./components/auth";
+import { Database } from "./components/database";
+import Chatrooms from "./components/Chatrooms";
 
 function App() {
     return (
-        <div>
-            <h1>Firebase Example</h1>
-            <p>
-                <Link to="/authentication">Authentication</Link>
-            </p>
-            <p>
-                <Link to="/database">Realtime Database</Link>
-            </p>
-        </div>
+        <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/authentication" element={<Auth />} />
+            <Route path="/database" element={<Database />} />
+            <Route path="/chatrooms" element={<Chatrooms />} />
+        </Routes>
     );
 }
 
