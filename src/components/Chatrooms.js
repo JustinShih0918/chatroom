@@ -29,7 +29,12 @@ function Chatrooms() {
     const [loading, setLoading] = useState(true);
     // Replace the separate dropdown states with a single panel state
     const [showSettingsPanel, setShowSettingsPanel] = useState(false);
-    
+    const messagesEndRef = React.useRef(null);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
     useEffect(() => {
         // Redirect to home if not logged in
         if (!auth.currentUser) {
@@ -59,6 +64,10 @@ function Chatrooms() {
             if (unsubscribe) unsubscribe();
         };
     }, [activeChatroom]);
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
     
     // Fetch members when active chatroom changes or settings panel opens
     useEffect(() => {
@@ -248,18 +257,21 @@ function Chatrooms() {
                             {messages.length === 0 ? (
                                 <p className="no-messages">No messages yet. Be the first to send a message!</p>
                             ) : (
-                                messages.map((message) => (
-                                    <div 
-                                        key={message.id}
-                                        className={`message ${message.userId === auth.currentUser?.uid ? 'own-message' : ''}`}
-                                    >
-                                        <div className="message-sender">{message.displayName}</div>
-                                        <div className="message-content">{message.text}</div>
-                                        <div className="message-timestamp">
-                                            {message.timestamp ? new Date(message.timestamp).toLocaleString() : 'Sending...'}
+                                <>
+                                    {messages.map((message) => (
+                                        <div 
+                                            key={message.id}
+                                            className={`message ${message.userId === auth.currentUser?.uid ? 'own-message' : ''}`}
+                                        >
+                                            <div className="message-sender">{message.displayName}</div>
+                                            <div className="message-content">{message.text}</div>
+                                            <div className="message-timestamp">
+                                                {message.timestamp ? new Date(message.timestamp).toLocaleString() : 'Sending...'}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))
+                                    ))}
+                                    <div ref={messagesEndRef} />
+                                </>
                             )}
                         </div>
                         
