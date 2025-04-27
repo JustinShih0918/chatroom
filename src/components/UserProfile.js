@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ref, get, update } from "firebase/database";
+import { updateEmail, updateProfile } from "firebase/auth";
 import { auth, db } from "../config";
 import "../styles/userprofile.css";
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -29,7 +30,10 @@ function UserProfile() {
         displayName: "",
         photoURL: "",
         age: "",
-        gender: ""
+        gender: "",
+        email: "",
+        phoneNumber: "",
+        address: ""
     });
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
@@ -37,6 +41,7 @@ function UserProfile() {
     const [success, setSuccess] = useState("");
     const [selectedPicture, setSelectedPicture] = useState(null);
     const [showPictureSelection, setShowPictureSelection] = useState(false);
+    const [originalEmail, setOriginalEmail] = useState("");
     
     useEffect(() => {
         const fetchUserData = async () => {
@@ -55,8 +60,13 @@ function UserProfile() {
                         displayName: data.displayName || "",
                         photoURL: data.photoURL || "",
                         age: data.age || "",
-                        gender: data.gender || ""
+                        gender: data.gender || "",
+                        email: auth.currentUser.email || data.email || "",
+                        phoneNumber: data.phoneNumber || "",
+                        address: data.address || ""
                     });
+                    
+                    setOriginalEmail(auth.currentUser.email || "");
                     
                     // Set the selected picture if the user already has one
                     if (data.photoURL) {
@@ -110,16 +120,46 @@ function UserProfile() {
                 }
             }
             
-            // Update user profile
+            // Validate phone number if provided - allowing numbers, spaces, hyphens, parentheses, and plus signs
+            if (userData.phoneNumber && !/^[0-9+\-\s()]{7,20}$/.test(userData.phoneNumber)) {
+                throw new Error("Phone number should only contain numbers, spaces, hyphens, parentheses, and plus signs");
+            }
+            
+            // Check if email has changed
+            if (userData.email !== originalEmail) {
+                try {
+                    // Update email in Firebase Auth
+                    await updateEmail(user, userData.email);
+                } catch (error) {
+                    // If email update fails, it might require re-authentication
+                    if (error.code === 'auth/requires-recent-login') {
+                        throw new Error("Email change requires recent login. Please sign out and sign in again before changing your email.");
+                    } else {
+                        throw new Error("Failed to update email: " + error.message);
+                    }
+                }
+            }
+            
+            // Update profile in Firebase Auth
+            await updateProfile(user, {
+                displayName: userData.displayName,
+                photoURL: userData.photoURL
+            });
+            
+            // Update user profile in database
             await update(ref(db, `users/${user.uid}`), {
                 displayName: userData.displayName,
                 photoURL: userData.photoURL,
                 age: ageValue,
                 gender: userData.gender,
+                email: userData.email,
+                phoneNumber: userData.phoneNumber,
+                address: userData.address,
                 updatedAt: new Date().toISOString()
             });
             
             setSuccess("Profile updated successfully!");
+            setOriginalEmail(userData.email); // Update original email
             setTimeout(() => setSuccess(""), 3000);
         } catch (error) {
             setError("Failed to update profile: " + error.message);
@@ -186,44 +226,85 @@ function UserProfile() {
                     )}
                 </div>
                 
-                <div className="form-group">
-                    <label htmlFor="displayName">Display Name</label>
-                    <input
-                        type="text"
-                        id="displayName"
-                        name="displayName"
-                        value={userData.displayName}
-                        onChange={handleInputChange}
-                        required
-                    />
-                </div>
-                
-                <div className="form-group">
-                    <label htmlFor="age">Age (optional)</label>
-                    <input
-                        type="number"
-                        id="age"
-                        name="age"
-                        value={userData.age}
-                        onChange={handleInputChange}
-                        min="13"
-                        max="120"
-                    />
-                </div>
-                
-                <div className="form-group">
-                    <label htmlFor="gender">Gender (optional)</label>
-                    <select
-                        id="gender"
-                        name="gender"
-                        value={userData.gender}
-                        onChange={handleInputChange}
-                    >
-                        <option value="">Prefer not to say</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
-                    </select>
+                <div className="profile-details">
+                    <div className="form-group">
+                        <label htmlFor="displayName">Display Name</label>
+                        <input
+                            type="text"
+                            id="displayName"
+                            name="displayName"
+                            value={userData.displayName}
+                            onChange={handleInputChange}
+                            required
+                        />
+                    </div>
+                    
+                    <div className="form-group">
+                        <label htmlFor="email">Email</label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            value={userData.email}
+                            onChange={handleInputChange}
+                            required
+                        />
+                        <small className="form-hint">Changing email requires recent login</small>
+                    </div>
+                    
+                    <div className="form-group">
+                        <label htmlFor="phoneNumber">Phone Number</label>
+                        <input
+                            type="tel"
+                            id="phoneNumber"
+                            name="phoneNumber"
+                            value={userData.phoneNumber}
+                            onChange={handleInputChange}
+                            placeholder="e.g., 0907-191-676"
+                        />
+                    </div>
+                    
+                    <div className="form-group">
+                        <label htmlFor="address">Address</label>
+                        <textarea
+                            id="address"
+                            name="address"
+                            value={userData.address}
+                            onChange={handleInputChange}
+                            rows={3}
+                            placeholder="Your address"
+                        />
+                    </div>
+                    
+                    <div className="form-row">
+                        <div className="form-group half-width">
+                            <label htmlFor="age">Age</label>
+                            <input
+                                type="number"
+                                id="age"
+                                name="age"
+                                value={userData.age}
+                                onChange={handleInputChange}
+                                min="13"
+                                max="120"
+                            />
+                        </div>
+                        
+                        <div className="form-group half-width">
+                            <label htmlFor="gender">Gender</label>
+                            <select
+                                id="gender"
+                                name="gender"
+                                value={userData.gender}
+                                onChange={handleInputChange}
+                            >
+                                <option value="">Prefer not to say</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
                 
                 <button 
