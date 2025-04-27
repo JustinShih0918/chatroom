@@ -15,9 +15,7 @@ import "../styles/chatrooms.css";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 function Chatrooms() {
-    // Add state for members
     const [members, setMembers] = useState([]);
-    // Rest of your state variables remain the same
     const navigate = useNavigate();
     const [chatrooms, setChatrooms] = useState([]);
     const [activeChatroom, setActiveChatroom] = useState(null);
@@ -29,6 +27,7 @@ function Chatrooms() {
     const [showNewChatroomForm, setShowNewChatroomForm] = useState(false);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
+    // Replace the separate dropdown states with a single panel state
     const [showSettingsPanel, setShowSettingsPanel] = useState(false);
     
     useEffect(() => {
@@ -60,6 +59,23 @@ function Chatrooms() {
             if (unsubscribe) unsubscribe();
         };
     }, [activeChatroom]);
+    
+    // Fetch members when active chatroom changes or settings panel opens
+    useEffect(() => {
+        if (activeChatroom && showSettingsPanel) {
+            const fetchMembers = async () => {
+                try {
+                    const memberData = await getChatroomMembers(activeChatroom.id);
+                    setMembers(memberData);
+                } catch (error) {
+                    console.error("Error fetching members", error);
+                    setError("Failed to load members");
+                }
+            };
+            
+            fetchMembers();
+        }
+    }, [activeChatroom, showSettingsPanel]);
     
     const handleSignOut = async () => {
         try {
@@ -115,36 +131,38 @@ function Chatrooms() {
     const handleLeaveChatroom = async () => {
         if (!activeChatroom) return;
         
-        try {
-            await leaveChatroom(activeChatroom.id);
-            setActiveChatroom(null);
-            setShowSettingsPanel(false);
-        } catch (error) {
-            setError("Failed to leave chatroom: " + error.message);
+        if (window.confirm("Are you sure you want to leave this chatroom?")) {
+            try {
+                await leaveChatroom(activeChatroom.id);
+                setActiveChatroom(null);
+                setShowSettingsPanel(false);
+            } catch (error) {
+                setError("Failed to leave chatroom: " + error.message);
+            }
         }
     };
     
-    // Add new useEffect to fetch member data when activeChatroom changes or settings panel opens
-    useEffect(() => {
-        if (activeChatroom && showSettingsPanel) {
-            const fetchMembers = async () => {
-                try {
-                    const memberData = await getChatroomMembers(activeChatroom.id);
-                    setMembers(memberData);
-                } catch (error) {
-                    console.error("Error fetching members", error);
-                    setError("Failed to load members");
-                }
-            };
-            
-            fetchMembers();
-        }
-    }, [activeChatroom, showSettingsPanel]);
-    
-    // Toggle settings panel function with enhancement to load members
     const toggleSettingsPanel = () => {
         setShowSettingsPanel(!showSettingsPanel);
     };
+    
+    // Click away handler for settings panel
+    useEffect(() => {
+        const handleClickAway = (event) => {
+            // Check if the click is outside the settings panel and not on the settings button
+            if (showSettingsPanel && 
+                !event.target.closest('.settings-panel') && 
+                !event.target.closest('.settings-button')) {
+                setShowSettingsPanel(false);
+            }
+        };
+        
+        document.addEventListener('click', handleClickAway);
+        
+        return () => {
+            document.removeEventListener('click', handleClickAway);
+        };
+    }, [showSettingsPanel]);
     
     if (loading) {
         return <div className="loading">Loading chatrooms...</div>;
@@ -190,25 +208,12 @@ function Chatrooms() {
                             <div 
                                 key={chatroom.id} 
                                 className={`chatroom-item ${activeChatroom?.id === chatroom.id ? 'active' : ''}`}
+                                onClick={() => setActiveChatroom(chatroom)}
                             >
-                                <div 
-                                    className="chatroom-info"
-                                    onClick={() => setActiveChatroom(chatroom)}
-                                >
+                                <div className="chatroom-info">
                                     <h3>{chatroom.name}</h3>
                                     <p>{chatroom.description}</p>
                                 </div>
-                                {activeChatroom?.id === chatroom.id && (
-                                    <button 
-                                        className="settings-button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            toggleSettingsPanel();
-                                        }}
-                                    >
-                                        <i className="bi bi-gear-fill"></i>
-                                    </button>
-                                )}
                             </div>
                         ))
                     )}
@@ -225,10 +230,18 @@ function Chatrooms() {
                 {activeChatroom ? (
                     <>
                         <div className="chat-header">
-                            <div>
+                            <div className="chatroom-info">
                                 <h2>{activeChatroom.name}</h2>
                                 <p>{activeChatroom.description}</p>
                             </div>
+                            
+                            <button 
+                                className="settings-button"
+                                onClick={toggleSettingsPanel}
+                                aria-label="Chatroom settings"
+                            >
+                                <i className="bi bi-gear-fill"></i>
+                            </button>
                         </div>
                         
                         <div className="messages-container">
@@ -282,19 +295,6 @@ function Chatrooms() {
                 
                 <div className="settings-content">
                     <div className="settings-section">
-                        <h4>Add Member</h4>
-                        <form className="add-member-form" onSubmit={handleAddMember}>
-                            <input
-                                type="email"
-                                placeholder="Add member by email"
-                                value={newMemberEmail}
-                                onChange={(e) => setNewMemberEmail(e.target.value)}
-                            />
-                            <button type="submit">Add</button>
-                        </form>
-                    </div>
-                    
-                    <div className="settings-section">
                         <h4>Members ({members.length})</h4>
                         <div className="members-list">
                             {members.length === 0 ? (
@@ -316,13 +316,27 @@ function Chatrooms() {
                         </div>
                     </div>
                     
+                    <div className="settings-section">
+                        <h4>Add Member</h4>
+                        <form className="add-member-form" onSubmit={handleAddMember}>
+                            <input
+                                type="email"
+                                placeholder="Add member by email"
+                                value={newMemberEmail}
+                                onChange={(e) => setNewMemberEmail(e.target.value)}
+                                required
+                            />
+                            <button type="submit">Add</button>
+                        </form>
+                    </div>
+                    
                     <div className="settings-section danger-zone">
                         <h4>Danger Zone</h4>
                         <button 
                             onClick={handleLeaveChatroom} 
                             className="leave-button"
                         >
-                            Leave Chatroom
+                            <i className="bi bi-box-arrow-right"></i> Leave Chatroom
                         </button>
                     </div>
                 </div>
