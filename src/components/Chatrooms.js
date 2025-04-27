@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { auth } from "../config";
 import { signOut } from "firebase/auth";
 import { 
@@ -229,8 +229,11 @@ function Chatrooms() {
                 </div>
                 
                 <div className="user-controls">
+                    <Link to="/profile" className="profile-button">
+                        <i className="bi bi-person-circle"></i> Edit Profile
+                    </Link>
                     <button onClick={handleSignOut} className="sign-out-button">
-                        Sign Out
+                        <i className="bi bi-box-arrow-right"></i> Sign Out
                     </button>
                 </div>
             </div>
@@ -312,12 +315,26 @@ function Chatrooms() {
                             {members.length === 0 ? (
                                 <p>Loading members...</p>
                             ) : (
-                                <ul className="members-emails-list">
+                                <ul className="members-list-container">
                                     {members.map((member) => (
                                         <li key={member.uid} className="member-item">
-                                            <span className="member-email">
-                                                <i className="bi bi-person"></i> {member.email}
-                                            </span>
+                                            <div className="member-info">
+                                                {/* Show profile photo if available */}
+                                                {member.photoURL ? (
+                                                    <img 
+                                                        src={member.photoURL} 
+                                                        alt={member.displayName} 
+                                                        className="member-avatar"
+                                                    />
+                                                ) : (
+                                                    <div className="member-avatar-placeholder">
+                                                        <i className="bi bi-person"></i>
+                                                    </div>
+                                                )}
+                                                <span className="member-name">
+                                                    {member.displayName}
+                                                </span>
+                                            </div>
                                             {member.uid === activeChatroom?.createdBy && (
                                                 <span className="owner-badge">Owner</span>
                                             )}

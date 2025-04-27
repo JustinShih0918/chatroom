@@ -94,14 +94,19 @@ export const sendMessage = async (chatroomId, text) => {
   const user = auth.currentUser;
   if (!user) throw new Error("User must be logged in");
   
+  // Get the latest user profile information
+  const userRef = ref(db, `users/${user.uid}`);
+  const userSnapshot = await get(userRef);
+  const userData = userSnapshot.exists() ? userSnapshot.val() : {};
+  
   const messagesRef = ref(db, `messages/${chatroomId}`);
   const newMessageRef = push(messagesRef);
   
   const message = {
     text,
     userId: user.uid,
-    displayName: user.displayName || user.email.split('@')[0],
-    photoURL: user.photoURL || null,
+    displayName: userData.displayName || user.displayName || user.email.split('@')[0],
+    photoURL: userData.photoURL || user.photoURL || null,
     timestamp: serverTimestamp()
   };
   
@@ -212,7 +217,8 @@ export const getChatroomMembers = async (chatroomId) => {
       members.push({
         uid,
         email: userData.email,
-        displayName: userData.displayName || userData.email.split('@')[0]
+        displayName: userData.displayName || userData.email.split('@')[0],
+        photoURL: userData.photoURL || null
       });
     }
   }
