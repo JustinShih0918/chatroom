@@ -57,6 +57,79 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  position: relative; /* For proper child positioning */
+}
+
+/* When messages container is empty, make it center content */
+.messages-container:has(.no-messages) {
+  justify-content: center;
+  align-items: center;
+}
+
+.no-messages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 25px;
+  text-align: center;
+  background-color: #f5f9ff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  color: #666;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  max-width: 400px;
+  width: 90%;
+  margin: auto; /* Centers horizontally */
+}
+
+/* Bootstrap icon styling */
+.no-messages .message-icon {
+  font-size: 2.5rem;
+  color: #4285f4;
+  margin-bottom: 15px;
+  opacity: 0.8;
+}
+
+/* Responsive styles for no-messages */
+@media (max-width: 900px) {
+  .no-messages {
+    font-size: 1rem;
+    padding: 20px;
+    max-width: 350px;
+  }
+  
+  .no-messages .message-icon {
+    font-size: 2.2rem;
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .no-messages {
+    font-size: 0.95rem;
+    padding: 15px;
+    max-width: 300px;
+  }
+  
+  .no-messages .message-icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .no-messages {
+    font-size: 0.9rem;
+    padding: 12px;
+    max-width: 250px;
+  }
+  
+  .no-messages .message-icon {
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+  }
 }
 
 /* Basic message layout */
@@ -277,5 +350,18 @@
   
   .message-input-form input {
     padding: 7px 10px;
+  }
+}
+
+/* Special case for very short screens */
+@media (max-height: 500px) {
+  .no-messages {
+    font-size: 0.9rem;
+  }
+  
+  .no-messages::before {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 6px;
   }
 }

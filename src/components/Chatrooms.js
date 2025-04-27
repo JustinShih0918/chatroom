@@ -306,7 +306,10 @@ function Chatrooms() {
                         
                         <div className="messages-container">
                             {messages.length === 0 ? (
-                                <p className="no-messages">No messages yet. Be the first to send a message!</p>
+                                <div className="no-messages">
+                                    <i className="bi bi-chat-left-text message-icon"></i>
+                                    No messages yet. Be the first to send a message!
+                                </div>
                             ) : (
                                 <>
                                     {messages.map((message) => (
@@ -354,7 +357,7 @@ function Chatrooms() {
                 ) : (
                     <div className="no-active-chatroom">
                         <h2>Select a chatroom or create a new one</h2>
-                        <p>Private chatrooms let you communicate with other members securely</p>
+                        <p>You can add any new chat member for your chatroom.</p>
                     </div>
                 )}
             </div>
