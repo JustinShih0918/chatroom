@@ -59,6 +59,8 @@ function HomePage() {
                 photoURL: null,
                 age: null,
                 gender: "",
+                phoneNumber: "",
+                address: "",
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp()
             });
@@ -88,7 +90,9 @@ function HomePage() {
             if (snapshot.exists()) {
                 // Update login timestamp if user exists
                 await update(userRef, {
-                    lastLogin: serverTimestamp()
+                    lastLogin: serverTimestamp(),
+                    // Ensure email is updated in case it changed in Google account
+                    email: user.email
                 });
             } else {
                 // Store new user data
@@ -98,6 +102,8 @@ function HomePage() {
                     photoURL: user.photoURL,
                     age: null,
                     gender: "",
+                    phoneNumber: "",
+                    address: "",
                     createdAt: serverTimestamp(),
                     updatedAt: serverTimestamp()
                 });
