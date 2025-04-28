@@ -327,6 +327,62 @@ export const searchUsers = async (searchTerm) => {
   return results;
 };
 
+// Add to chatroomService.js - add this function to the exports
+export const searchMessages = async (chatroomId, searchTerm) => {
+  if (!searchTerm || searchTerm.trim().length === 0) {
+    return [];
+  }
+  
+  const user = auth.currentUser;
+  if (!user) throw new Error("User must be logged in");
+  
+  // Verify user is member of the chatroom
+  const chatroomRef = ref(db, `chatrooms/${chatroomId}`);
+  const chatroomSnapshot = await get(chatroomRef);
+  
+  if (!chatroomSnapshot.exists()) {
+    throw new Error("Chatroom not found");
+  }
+  
+  const chatroom = chatroomSnapshot.val();
+  if (!chatroom.members || !chatroom.members[user.uid]) {
+    throw new Error("You must be a member of this chatroom to search messages");
+  }
+  
+  // Get all messages for the chatroom
+  const messagesRef = ref(db, `messages/${chatroomId}`);
+  const messagesSnapshot = await get(messagesRef);
+  
+  if (!messagesSnapshot.exists()) {
+    return [];
+  }
+  
+  const results = [];
+  const searchTermLower = searchTerm.toLowerCase();
+  
+  messagesSnapshot.forEach((childSnapshot) => {
+    const message = childSnapshot.val();
+    const messageId = childSnapshot.key;
+    
+    // Search in message text
+    if (message.text && message.text.toLowerCase().includes(searchTermLower)) {
+      results.push({
+        id: messageId,
+        ...message
+      });
+    }
+  });
+  
+  // Sort results by timestamp (newest first)
+  results.sort((a, b) => {
+    const timestampA = a.timestamp || 0;
+    const timestampB = b.timestamp || 0;
+    return timestampB - timestampA;
+  });
+  
+  return results;
+};
+
 // Add this function to allow users to unsend their messages
 export const unsendMessage = async (chatroomId, messageId) => {
   const user = auth.currentUser;

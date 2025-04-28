@@ -12,6 +12,7 @@ import {
     searchUsers,
     listenToChatroomMembers,
     unsendMessage,
+    searchMessages, // <-- Import the searchMessages function
 } from "../components/chatroomService";
 import { 
   initializeNotifications, 
@@ -373,6 +374,52 @@ function Chatrooms() {
         }
     };
     
+    // 1. Add these state variables at the top with other useState hooks:
+    const [messageSearchTerm, setMessageSearchTerm] = useState("");
+    const [messageSearchResults, setMessageSearchResults] = useState([]);
+    const [isSearchingMessages, setIsSearchingMessages] = useState(false);
+    const [highlightedMessageId, setHighlightedMessageId] = useState(null);
+
+    // 2. Add this function to search messages (put this with your other handlers):
+    const handleMessageSearch = async () => {
+        if (!messageSearchTerm.trim() || !activeChatroom) return;
+        setIsSearchingMessages(true);
+        try {
+            // You need to implement searchMessages in chatroomService.js
+            const results = await searchMessages(activeChatroom.id, messageSearchTerm);
+            setMessageSearchResults(results);
+        } catch (error) {
+            setError("Search failed: " + error.message);
+        }
+        setIsSearchingMessages(false);
+    };
+
+    // 3. Add this function to jump to a message:
+    const handleSelectSearchResult = (message) => {
+        setHighlightedMessageId(message.id);
+        const el = document.getElementById(`message-${message.id}`);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('highlighted-message');
+            setTimeout(() => {
+                el.classList.remove('highlighted-message');
+                setHighlightedMessageId(null);
+            }, 2000);
+        }
+        setShowSettingsPanel(false);
+    };
+
+    // 4. Highlight search term in results:
+    const highlightSearchTerm = (text, searchTerm) => {
+        if (!searchTerm) return text;
+        const parts = text.split(new RegExp(`(${searchTerm})`, 'gi'));
+        return parts.map((part, i) =>
+            part.toLowerCase() === searchTerm.toLowerCase()
+                ? <span key={i} className="highlight-text">{part}</span>
+                : part
+        );
+    };
+
     // AFTER all hooks are defined, THEN you can have conditional returns
     if (loading) {
         return <div className="loading">Loading chatrooms...</div>;
@@ -468,7 +515,8 @@ function Chatrooms() {
                                     {messages.map((message) => (
                                         <div 
                                             key={message.id}
-                                            className={`message ${message.userId === auth.currentUser?.uid ? 'own-message' : 'other-message'}`}
+                                            id={`message-${message.id}`}
+                                            className={`message ${message.userId === auth.currentUser?.uid ? 'own-message' : 'other-message'}${message.id === highlightedMessageId ? ' highlighted-message' : ''}`}
                                             onContextMenu={(e) => handleMessageContextMenu(e, message)}
                                             onTouchStart={(e) => handleTouchStart(e, message)}
                                             onTouchEnd={handleTouchEnd}
@@ -490,7 +538,7 @@ function Chatrooms() {
                                                 </div>
                                                 <div className="message-sender">{message.displayName}</div>
                                             </div>
-                                            <div className="message-content">{message.text}</div>
+                                            <div className="message-content">{highlightSearchTerm(message.text, messageSearchTerm)}</div>
                                             <div className="message-timestamp">
                                                 {message.timestamp ? new Date(message.timestamp).toLocaleString() : 'Sending...'}
                                             </div>
@@ -631,6 +679,60 @@ function Chatrooms() {
                                     Add by Email
                                 </button>
                             </form>
+                        </div>
+                    </div>
+
+                    {/* 5. In your settings panel JSX, add this section (before Danger Zone): */}
+                    <div className="settings-section">
+                        <h4><i className="bi bi-search"></i> Search Messages</h4>
+                        <div className="message-search-container">
+                            <div className="search-input-wrapper">
+                                <input
+                                    type="text"
+                                    className="search-message-input"
+                                    placeholder="Search messages in this chatroom"
+                                    value={messageSearchTerm}
+                                    onChange={e => setMessageSearchTerm(e.target.value)}
+                                    onKeyDown={e => e.key === 'Enter' && handleMessageSearch()}
+                                />
+                                {isSearchingMessages && <div className="search-loading"><i className="bi bi-hourglass-split"></i></div>}
+                                {messageSearchTerm && !isSearchingMessages && (
+                                    <button className="clear-search-button" onClick={() => setMessageSearchTerm("")}>
+                                        <i className="bi bi-x-circle"></i>
+                                    </button>
+                                )}
+                            </div>
+                            <button
+                                className="search-button"
+                                onClick={handleMessageSearch}
+                                disabled={!messageSearchTerm.trim() || isSearchingMessages}
+                            >
+                                <i className="bi bi-search"></i> Search
+                            </button>
+                            {messageSearchResults.length > 0 && (
+                                <div className="message-search-results">
+                                    {messageSearchResults.map(message => (
+                                        <div
+                                            key={message.id}
+                                            className="search-result-message"
+                                            onClick={() => handleSelectSearchResult(message)}
+                                        >
+                                            <div className="result-sender">{message.displayName}</div>
+                                            <div className="result-preview">
+                                                {highlightSearchTerm(message.text, messageSearchTerm)}
+                                            </div>
+                                            <div className="result-timestamp">
+                                                {message.timestamp ? new Date(message.timestamp).toLocaleString() : 'Unknown time'}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {messageSearchTerm && messageSearchResults.length === 0 && !isSearchingMessages && (
+                                <div className="no-search-results">
+                                    No messages found matching "{messageSearchTerm}"
+                                </div>
+                            )}
                         </div>
                     </div>
                     

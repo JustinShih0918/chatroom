@@ -348,6 +348,143 @@
   font-size: 1.2rem;
 }
 
+/* --- Message Search Improvements --- */
+.message-search-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.search-message-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background-color: #f9f9f9;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-message-input:focus {
+  outline: none;
+  border-color: #4285f4;
+  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.15);
+  background-color: white;
+}
+
+.message-search-results {
+  background: #fff;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(66,133,244,0.07);
+  margin-top: 8px;
+  padding: 0;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.search-result-message {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f5f5f5;
+  cursor: pointer;
+  transition: background 0.18s;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0;
+}
+
+.search-result-message:last-child {
+  border-bottom: none;
+}
+
+.search-result-message:hover {
+  background: #f0f7ff;
+}
+
+.result-sender {
+  font-weight: 600;
+  color: #4285f4;
+  font-size: 0.96rem;
+  margin-bottom: 2px;
+}
+
+.result-preview {
+  font-size: 0.97rem;
+  color: #222;
+  margin-bottom: 2px;
+  word-break: break-word;
+}
+
+.result-timestamp {
+  font-size: 0.78rem;
+  color: #888;
+  margin-top: 2px;
+}
+
+.highlight-text {
+  background: #fff9c4;
+  font-weight: 500;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+.no-search-results {
+  padding: 18px;
+  text-align: center;
+  color: #888;
+  background: #f5f5f5;
+  border-radius: 8px;
+  font-size: 0.97rem;
+}
+
+/* Highlighted message for search result */
+.highlighted-message {
+  animation: highlight-pulse 2s;
+  border-radius: 6px;
+  box-shadow: 0 0 0 2px #fff9c4;
+}
+
+@keyframes highlight-pulse {
+  0% { background: #fff9c4; }
+  100% { background: inherit; }
+}
+
+/* Search button and clear button tweaks */
+.search-button {
+  margin-top: 8px;
+  padding: 8px 14px;
+  background: #4285f4;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 0.97rem;
+  cursor: pointer;
+  transition: background 0.18s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.search-button:disabled {
+  background: #b3cdfa;
+  cursor: not-allowed;
+}
+
+.clear-search-button {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  display: flex;
+  padding: 0;
+  font-size: 1.1rem;
+}
+
 /* Responsive adjustments for the settings panel */
 @media (max-width: 768px) {
   .settings-panel {
