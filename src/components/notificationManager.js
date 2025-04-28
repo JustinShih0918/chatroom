@@ -70,13 +70,14 @@ export const setupMessageNotifications = (
       
       // Check if we should show notification
       if (shouldShowNotification(activeChatroomId, chatroom.id)) {
-        // Show the notification
+        // Show the notification with timestamp
         showMessageNotification(
           lastMessage.displayName,
           chatroom.name,
           lastMessage.text,
           chatroom.id,
           lastMessage.photoURL,
+          lastMessage.timestamp, // Pass the timestamp to the notification function
           onNotificationClick
         );
       }

@@ -54,12 +54,30 @@ const sanitizeText = (text) => {
 };
 
 /**
+ * Format timestamp for display in notifications
+ * @param {number} timestamp - Timestamp in milliseconds
+ * @returns {string} Formatted time string
+ */
+const formatTimestamp = (timestamp) => {
+  if (!timestamp) return '';
+  
+  const date = new Date(timestamp);
+  
+  // Format time as HH:MM
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  
+  return `${hours}:${minutes}`;
+};
+
+/**
  * Show a notification for a new chat message
  * @param {string} senderName - Name of message sender
  * @param {string} chatroomName - Name of the chatroom
  * @param {string} message - Message content
  * @param {string} chatroomId - ID of the chatroom
  * @param {string} photoURL - Optional URL of sender's profile photo
+ * @param {number} timestamp - Message timestamp
  * @param {Function} onClickCallback - Callback to run when notification is clicked
  * @returns {Notification|null} The notification object or null if not shown
  */
@@ -69,6 +87,7 @@ export const showMessageNotification = (
   message, 
   chatroomId,
   photoURL = null,
+  timestamp = null,
   onClickCallback = null
 ) => {
   // Check permission first
@@ -81,16 +100,24 @@ export const showMessageNotification = (
   const safeSenderName = sanitizeText(senderName);
   const safeChatroomName = sanitizeText(chatroomName);
   const safeMessage = sanitizeText(message);
+  
+  // Format the timestamp
+  const timeStr = formatTimestamp(timestamp);
 
   // Truncate message if too long
-  const truncatedMessage = safeMessage.length > 60 
-    ? safeMessage.substring(0, 57) + '...' 
+  const truncatedMessage = safeMessage.length > 50 
+    ? safeMessage.substring(0, 47) + '...' 
     : safeMessage;
+    
+  // Add timestamp to message if available
+  const messageWithTime = timeStr 
+    ? `[${timeStr}] ${truncatedMessage}` 
+    : truncatedMessage;
 
   // Create notification options with sanitized content
   const options = {
-    body: `${truncatedMessage}`,
-    icon: photoURL || '/logo192.png', // Check icon URL in production
+    body: messageWithTime,
+    icon: photoURL || '/logo192.png',
     badge: '/logo192.png',
     tag: `chatroom-${chatroomId}`,
     requireInteraction: false,
