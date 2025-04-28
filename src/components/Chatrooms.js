@@ -9,9 +9,9 @@ import {
     sendMessage, 
     addMemberToChatroom, 
     leaveChatroom,
-    getChatroomMembers,
     searchUsers,
     listenToChatroomMembers,
+    unsendMessage,
 } from "../components/chatroomService";
 import { 
   initializeNotifications, 
@@ -23,6 +23,7 @@ import "../styles/settings.css";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 function Chatrooms() {
+    // All state hooks first (you already have these at the top)
     const [members, setMembers] = useState([]);
     const navigate = useNavigate();
     const [chatrooms, setChatrooms] = useState([]);
@@ -31,14 +32,22 @@ function Chatrooms() {
     const [newMessage, setNewMessage] = useState("");
     const [newChatroomName, setNewChatroomName] = useState("");
     const [newChatroomDescription, setNewChatroomDescription] = useState("");
-    const [newMemberEmail, setNewMemberEmail] = useState("");
     const [showNewChatroomForm, setShowNewChatroomForm] = useState(false);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
-    const [user, setUser] = useState(null); // Add this state to track auth state
+    const [user, setUser] = useState(null);
     const [showSettingsPanel, setShowSettingsPanel] = useState(false);
-    const [notificationsEnabled, setNotificationsEnabled] = useState(false); // Add this state to track notification permission status
+    const [notificationsEnabled, setNotificationsEnabled] = useState(false);
     const messagesEndRef = React.useRef(null);
+    const contextMenuRef = React.useRef(null);
+
+    // Move context menu states here - before any conditional returns
+    const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 });
+    const [selectedMessage, setSelectedMessage] = useState(null);
+    const [longPressTimer, setLongPressTimer] = useState(null);
+    
+    // Remove unused state
+    // const [newMemberEmail, setNewMemberEmail] = useState("");
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -119,7 +128,7 @@ function Chatrooms() {
         
         try {
             setError("");
-            const chatroomId = await createChatroom(newChatroomName, newChatroomDescription);
+            await createChatroom(newChatroomName, newChatroomDescription); // Remove variable assignment
             setNewChatroomName("");
             setNewChatroomDescription("");
             setShowNewChatroomForm(false);
@@ -241,24 +250,6 @@ function Chatrooms() {
         setShowSettingsPanel(!showSettingsPanel);
     };
     
-    // Click away handler for settings panel
-    useEffect(() => {
-        const handleClickAway = (event) => {
-            // Check if the click is outside the settings panel and not on the settings button
-            if (showSettingsPanel && 
-                !event.target.closest('.settings-panel') && 
-                !event.target.closest('.settings-button')) {
-                setShowSettingsPanel(false);
-            }
-        };
-        
-        document.addEventListener('click', handleClickAway);
-        
-        return () => {
-            document.removeEventListener('click', handleClickAway);
-        };
-    }, [showSettingsPanel]);
-    
     // Initialize notifications when user logs in
     useEffect(() => {
       // Auto-request notification permission when user is authenticated
@@ -281,21 +272,108 @@ function Chatrooms() {
         }
     }, [chatrooms]);
     
-    // Setup message notification listeners
+    // Setup message notification listeners - FIXED VERSION
     useEffect(() => {
-        if (!user || !notificationsEnabled || !chatrooms.length) return;
+        let unsubscribe = () => {}; // Default no-op cleanup function
         
-        const unsubscribe = setupMessageNotifications(
-            chatrooms,
-            activeChatroom?.id,
-            user.uid,
-            getChatroomMessages,
-            handleNotificationClick
-        );
+        // Move the conditional check inside the effect
+        if (user && notificationsEnabled && chatrooms.length) {
+            unsubscribe = setupMessageNotifications(
+                chatrooms,
+                activeChatroom?.id,
+                user.uid,
+                getChatroomMessages,
+                handleNotificationClick
+            );
+        }
         
-        return unsubscribe;
+        // Return the cleanup function
+        return () => {
+            unsubscribe();
+        };
     }, [user, chatrooms, activeChatroom, notificationsEnabled, handleNotificationClick]);
     
+    // Update the handleMessageContextMenu function
+    const handleMessageContextMenu = (event, message) => {
+        // Only show context menu on user's own messages
+        if (message.userId === auth.currentUser?.uid) {
+            // Prevent default browser context menu
+            event.preventDefault();
+            // Stop propagation to avoid immediate closure
+            event.stopPropagation();
+            
+            // Get window dimensions and cursor position
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const clickX = event.pageX;
+            const clickY = event.pageY;
+            
+            // Context menu dimensions (approximate)
+            const menuWidth = 180;
+            const menuHeight = 50;
+            
+            // Calculate position, ensuring menu stays visible on screen
+            const x = (clickX + menuWidth > windowWidth) 
+                ? windowWidth - menuWidth - 10 
+                : clickX;
+                
+            const y = (clickY + menuHeight > windowHeight)
+                ? windowHeight - menuHeight - 10
+                : clickY;
+            
+            // Show our custom context menu at calculated position
+            setContextMenu({
+                visible: true,
+                x: x,
+                y: y
+            });
+            
+            // Store which message was clicked
+            setSelectedMessage(message);
+        }
+    };
+    
+    // Add function to handle unsend message action
+    const handleUnsendMessage = async () => {
+        if (!selectedMessage || !activeChatroom) return;
+        
+        try {
+            await unsendMessage(activeChatroom.id, selectedMessage.id);
+            // Close context menu after action
+            setContextMenu({ visible: false, x: 0, y: 0 });
+            setSelectedMessage(null);
+        } catch (error) {
+            setError("Failed to unsend message: " + error.message);
+        }
+    };
+    
+    // Add these handlers for touch devices
+    const handleTouchStart = (e, message) => {
+        // Only for user's own messages
+        if (message.userId === auth.currentUser?.uid) {
+            const timer = setTimeout(() => {
+                // Show context menu where the touch happened
+                setContextMenu({
+                    visible: true,
+                    x: e.touches[0].pageX,
+                    y: e.touches[0].pageY
+                });
+                setSelectedMessage(message);
+            }, 800); // 800ms long press
+            
+            setLongPressTimer(timer);
+        }
+    };
+
+    const handleTouchEnd = () => {
+        // Clear the timer if touch ends before long press is detected
+        if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            setLongPressTimer(null);
+        }
+    };
+    
+    // AFTER all hooks are defined, THEN you can have conditional returns
     if (loading) {
         return <div className="loading">Loading chatrooms...</div>;
     }
@@ -391,6 +469,10 @@ function Chatrooms() {
                                         <div 
                                             key={message.id}
                                             className={`message ${message.userId === auth.currentUser?.uid ? 'own-message' : 'other-message'}`}
+                                            onContextMenu={(e) => handleMessageContextMenu(e, message)}
+                                            onTouchStart={(e) => handleTouchStart(e, message)}
+                                            onTouchEnd={handleTouchEnd}
+                                            onTouchMove={handleTouchEnd}
                                         >
                                             <div className="message-header">
                                                 <div className="message-avatar">
@@ -576,6 +658,29 @@ function Chatrooms() {
                 <div className={`notification ${error.includes("Failed") ? "error" : "success"}`}>
                     {error}
                     <button onClick={() => setError("")}>&times;</button>
+                </div>
+            )}
+
+            {/* Message context menu */}
+            {contextMenu.visible && (
+                <div 
+                    ref={contextMenuRef}
+                    className="message-context-menu"
+                    style={{ 
+                        position: 'fixed',
+                        top: contextMenu.y,
+                        left: contextMenu.x
+                    }}
+                >
+                    <button className="unsend-button" onClick={handleUnsendMessage}>
+                        <i className="bi bi-trash"></i> Unsend Message
+                    </button>
+                    <button className="close-button" onClick={() => {
+                        setContextMenu({ visible: false, x: 0, y: 0 });
+                        setSelectedMessage(null);
+                    }}>
+                        <i className="bi bi-x-circle"></i> Close
+                    </button>
                 </div>
             )}
         </div>

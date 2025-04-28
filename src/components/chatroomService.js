@@ -326,3 +326,27 @@ export const searchUsers = async (searchTerm) => {
   
   return results;
 };
+
+// Add this function to allow users to unsend their messages
+export const unsendMessage = async (chatroomId, messageId) => {
+  const user = auth.currentUser;
+  if (!user) throw new Error("User must be logged in");
+  
+  // First verify that this is the user's own message
+  const messageRef = ref(db, `messages/${chatroomId}/${messageId}`);
+  const snapshot = await get(messageRef);
+  
+  if (!snapshot.exists()) {
+    throw new Error("Message not found");
+  }
+  
+  const message = snapshot.val();
+  
+  // Only allow users to delete their own messages
+  if (message.userId !== user.uid) {
+    throw new Error("You can only unsend your own messages");
+  }
+  
+  // Delete the message
+  await remove(messageRef);
+};

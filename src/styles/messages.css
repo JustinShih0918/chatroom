@@ -365,3 +365,70 @@
     margin-bottom: 6px;
   }
 }
+
+/* Context menu styling */
+.message-context-menu {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  overflow: hidden;
+  min-width: 180px;
+  animation: fadeIn 0.15s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message-context-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  width: 100%;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #333;
+  transition: background-color 0.1s;
+}
+
+.message-context-menu button:hover {
+  background-color: #f0f8ff;
+}
+
+.message-context-menu button i {
+  color: #ff4d4f;
+  font-size: 1rem;
+}
+
+/* Add visual indicator for own messages */
+.message.own-message {
+  position: relative;
+  cursor: context-menu;
+}
+
+.message.own-message:hover::after {
+  content: "⋮";
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  font-size: 16px;
+  color: rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive styles for mobile */
+@media (max-width: 768px) {
+  .message-context-menu {
+    min-width: 160px;
+  }
+  
+  .message-context-menu button {
+    padding: 14px 16px;
+    font-size: 1rem; /* Larger touch targets for mobile */
+  }
+}
