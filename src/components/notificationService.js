@@ -38,6 +38,22 @@ export const requestNotificationPermission = async () => {
 };
 
 /**
+ * Sanitize text to prevent XSS attacks
+ * @param {string} text - Text to sanitize
+ * @returns {string} Sanitized text
+ */
+const sanitizeText = (text) => {
+  if (!text) return '';
+  
+  // Create a temporary div element (not added to DOM)
+  const temp = document.createElement('div');
+  // Set text as textContent which automatically escapes HTML
+  temp.textContent = text;
+  // Return the escaped text
+  return temp.textContent;
+};
+
+/**
  * Show a notification for a new chat message
  * @param {string} senderName - Name of message sender
  * @param {string} chatroomName - Name of the chatroom
@@ -61,34 +77,36 @@ export const showMessageNotification = (
     return null;
   }
 
-  // Truncate message if too long
-  const truncatedMessage = message.length > 60 
-    ? message.substring(0, 57) + '...' 
-    : message;
+  // Sanitize all text inputs to prevent XSS
+  const safeSenderName = sanitizeText(senderName);
+  const safeChatroomName = sanitizeText(chatroomName);
+  const safeMessage = sanitizeText(message);
 
-  // Create notification options
+  // Truncate message if too long
+  const truncatedMessage = safeMessage.length > 60 
+    ? safeMessage.substring(0, 57) + '...' 
+    : safeMessage;
+
+  // Create notification options with sanitized content
   const options = {
     body: `${truncatedMessage}`,
-    icon: photoURL || '/logo192.png', // Use sender photo or default app icon
+    icon: photoURL || '/logo192.png', // Check icon URL in production
     badge: '/logo192.png',
-    tag: `chatroom-${chatroomId}`, // Tag with chatroom to avoid multiple notifications
-    requireInteraction: false, // Auto-close after a while
-    silent: false, // Play sound
+    tag: `chatroom-${chatroomId}`,
+    requireInteraction: false,
+    silent: false,
     data: {
       chatroomId: chatroomId,
       timestamp: Date.now()
     }
   };
 
-  // Create the notification
-  const notification = new Notification(`${senderName} in ${chatroomName}`, options);
+  // Create the notification with sanitized title
+  const notification = new Notification(`${safeSenderName} in ${safeChatroomName}`, options);
 
   // Add click handler
   notification.onclick = function() {
-    // Focus the window
     window.focus();
-    
-    // Close the notification
     notification.close();
     
     // Run callback if provided
