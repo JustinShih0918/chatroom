@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { auth } from "../config";
 import { signOut } from "firebase/auth";
@@ -13,6 +13,10 @@ import {
     searchUsers,
     listenToChatroomMembers,
 } from "../components/chatroomService";
+import { 
+  initializeNotifications, 
+  setupMessageNotifications 
+} from '../components/notificationManager';
 import "../styles/chatrooms.css";
 import "../styles/messages.css";
 import "../styles/settings.css";
@@ -33,6 +37,7 @@ function Chatrooms() {
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null); // Add this state to track auth state
     const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+    const [notificationsEnabled, setNotificationsEnabled] = useState(false); // Add this state to track notification permission status
     const messagesEndRef = React.useRef(null);
 
     const scrollToBottom = () => {
@@ -253,6 +258,43 @@ function Chatrooms() {
             document.removeEventListener('click', handleClickAway);
         };
     }, [showSettingsPanel]);
+    
+    // Initialize notifications when user logs in
+    useEffect(() => {
+      // Auto-request notification permission when user is authenticated
+      if (user) {
+        // Small delay to not show the permission dialog immediately after login
+        const timer = setTimeout(async () => {
+          const enabled = await initializeNotifications();
+          setNotificationsEnabled(enabled);
+        }, 2000); // 2 second delay for better user experience
+        
+        return () => clearTimeout(timer);
+      }
+    }, [user]);
+    
+    // Handle notification click to set the active chatroom
+    const handleNotificationClick = useCallback((chatroomId) => {
+        const chatroom = chatrooms.find(c => c.id === chatroomId);
+        if (chatroom) {
+            setActiveChatroom(chatroom);
+        }
+    }, [chatrooms]);
+    
+    // Setup message notification listeners
+    useEffect(() => {
+        if (!user || !notificationsEnabled || !chatrooms.length) return;
+        
+        const unsubscribe = setupMessageNotifications(
+            chatrooms,
+            activeChatroom?.id,
+            user.uid,
+            getChatroomMessages,
+            handleNotificationClick
+        );
+        
+        return unsubscribe;
+    }, [user, chatrooms, activeChatroom, notificationsEnabled, handleNotificationClick]);
     
     if (loading) {
         return <div className="loading">Loading chatrooms...</div>;
