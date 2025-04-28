@@ -165,27 +165,54 @@ export const leaveChatroom = async (chatroomId) => {
   const user = auth.currentUser;
   if (!user) throw new Error("User must be logged in");
   
-  const memberRef = ref(db, `chatrooms/${chatroomId}/members/${user.uid}`);
-  await remove(memberRef);
-  
-  // Check if user is the creator, if yes, delete chatroom or transfer ownership
-  const chatroomRef = ref(db, `chatrooms/${chatroomId}`);
-  const snapshot = await get(chatroomRef);
-  if (snapshot.exists()) {
+  try {
+    // First, check if user is creator and only member
+    const chatroomRef = ref(db, `chatrooms/${chatroomId}`);
+    const snapshot = await get(chatroomRef);
+    
+    if (!snapshot.exists()) {
+      throw new Error("Chatroom not found");
+    }
+    
     const chatroom = snapshot.val();
-    if (chatroom.createdBy === user.uid) {
-      // If creator is leaving, check if there are other members
-      const members = Object.keys(chatroom.members || {});
-      if (members.length > 0) {
-        // Transfer ownership to first member
-        await update(chatroomRef, { createdBy: members[0] });
-      } else {
-        // Delete chatroom if no members left
-        await remove(chatroomRef);
-        // Also delete messages
+    const members = Object.keys(chatroom.members || {});
+    const isCreator = chatroom.createdBy === user.uid;
+    const isOnlyMember = members.length === 1 && members.includes(user.uid);
+    
+    // If user is creator and only member, delete chatroom members first
+    if (isCreator && isOnlyMember) {
+      try {
+        // First remove the members node
+        await remove(ref(db, `chatrooms/${chatroomId}/members`));
+        
+        // Then remove the messages
         await remove(ref(db, `messages/${chatroomId}`));
+        
+        // Finally remove the chatroom
+        await remove(chatroomRef);
+        
+        return;
+      } catch (deleteError) {
+        console.error("Error during chatroom deletion: ", deleteError);
+        // Even if deletion fails partially, continue with member removal
       }
     }
+    
+    // Otherwise, proceed with normal leave process
+    const memberRef = ref(db, `chatrooms/${chatroomId}/members/${user.uid}`);
+    await remove(memberRef);
+    
+    // If user was creator but there are other members, transfer ownership
+    if (isCreator && members.length > 1) {
+      // Find another member who is not the current user
+      const newOwner = members.find(memberId => memberId !== user.uid);
+      if (newOwner) {
+        await update(chatroomRef, { createdBy: newOwner });
+      }
+    }
+  } catch (error) {
+    console.error("Leave chatroom error:", error);
+    throw error;
   }
 };
 

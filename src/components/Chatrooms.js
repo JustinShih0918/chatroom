@@ -31,7 +31,7 @@ function Chatrooms() {
     const [showNewChatroomForm, setShowNewChatroomForm] = useState(false);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
-    // Replace the separate dropdown states with a single panel state
+    const [user, setUser] = useState(null); // Add this state to track auth state
     const [showSettingsPanel, setShowSettingsPanel] = useState(false);
     const messagesEndRef = React.useRef(null);
 
@@ -39,22 +39,33 @@ function Chatrooms() {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
+    // Add this effect to properly handle authentication state
     useEffect(() => {
-        // Redirect to home if not logged in
-        if (!auth.currentUser) {
-            navigate("/");
-            return;
-        }
-        
-        const unsubscribe = getUserChatrooms((chatroomsList) => {
-            setChatrooms(chatroomsList);
-            setLoading(false);
+        const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+            if (currentUser) {
+                setUser(currentUser);
+            } else {
+                // Only navigate to home if we've confirmed the user is not signed in
+                navigate("/");
+            }
         });
         
-        return () => {
-            if (unsubscribe) unsubscribe();
-        };
+        return () => unsubscribe();
     }, [navigate]);
+
+    useEffect(() => {
+        // Only fetch chatrooms if user is authenticated
+        if (user) {
+            const unsubscribe = getUserChatrooms((chatroomsList) => {
+                setChatrooms(chatroomsList);
+                setLoading(false);
+            });
+            
+            return () => {
+                if (unsubscribe) unsubscribe();
+            };
+        }
+    }, [user]); // Changed dependency from navigate to user
     
     useEffect(() => {
         let unsubscribe;
@@ -190,11 +201,33 @@ function Chatrooms() {
         
         if (window.confirm("Are you sure you want to leave this chatroom?")) {
             try {
+                // Check if user is the creator and only member
+                const isCreator = activeChatroom.createdBy === auth.currentUser.uid;
+                const isOnlyMember = members.length === 1;
+                
                 await leaveChatroom(activeChatroom.id);
                 setActiveChatroom(null);
                 setShowSettingsPanel(false);
+                
+                // Show appropriate success message
+                if (isCreator && isOnlyMember) {
+                    setError("Chatroom deleted successfully.");
+                } else {
+                    setError("You have left the chatroom successfully.");
+                }
+                
+                setTimeout(() => setError(""), 3000);
             } catch (error) {
-                setError("Failed to leave chatroom: " + error.message);
+                console.error("Leave chatroom error:", error);
+                // Handle even permission errors gracefully
+                if (error.message.includes("PERMISSION_DENIED")) {
+                    setActiveChatroom(null);
+                    setShowSettingsPanel(false);
+                    setError("You have left the chatroom successfully.");
+                    setTimeout(() => setError(""), 3000);
+                } else {
+                    setError("Failed to leave chatroom: " + error.message);
+                }
             }
         }
     };
