@@ -130,7 +130,7 @@ function HomePage() {
             <div className="blob-bg"></div>
             <div className="home-content">
                 <div className="home-header">
-                    <h1>Firebase Chatroom</h1>
+                    <h1>ChatVerse</h1>
                     <p className="tagline">Connect and chat securely with your friends</p>
                 </div>
                 
