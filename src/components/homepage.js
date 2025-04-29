@@ -127,6 +127,7 @@ function HomePage() {
 
     return (
         <div className="home-container">
+            <div className="blob-bg"></div>
             <div className="home-content">
                 <div className="home-header">
                     <h1>Firebase Chatroom</h1>
