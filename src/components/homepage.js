@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { 
     signInWithEmailAndPassword, 
     createUserWithEmailAndPassword,
@@ -13,6 +13,7 @@ import "../styles/HomePage.css";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 function HomePage() {
+    const location = useLocation();
     const [activeTab, setActiveTab] = useState("signin");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -20,6 +21,13 @@ function HomePage() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const mode = params.get("mode");
+        if (mode === "signup") setActiveTab("signup");
+        else setActiveTab("signin");
+    }, [location.search]);
 
     const handleSignIn = async (e) => {
         e.preventDefault();
@@ -230,11 +238,6 @@ function HomePage() {
                             </button>
                         </form>
                     )}
-                </div>
-                
-                <div className="additional-links">
-                    <Link to="/database" className="link-button">Database Demo</Link>
-                    <Link to="/authentication" className="link-button">Authentication Demo</Link>
                 </div>
             </div>
         </div>

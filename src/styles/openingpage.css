@@ -1,0 +1,119 @@
+.opening-bg {
+  min-height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: fixed; /* Use fixed to cover viewport */
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 0;
+  background: linear-gradient(270deg, #6e45e2, #88d3ce, #ff9a9e);
+  background-size: 600% 600%;
+  animation: gradientBackground 10s ease infinite;
+}
+
+@keyframes gradientBackground {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.opening-animation {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 48px 32px 40px 32px;
+  border-radius: 24px;
+  background: rgba(30, 30, 30, 0.32); /* was rgba(255,255,255,0.10) */
+  box-shadow: 0 8px 32px 0 rgba(31,38,135,0.18);
+  backdrop-filter: blur(12px);
+  max-width: 90vw;
+}
+
+/* Gradient text effect for title and desc */
+.opening-title, .opening-desc {
+  background: linear-gradient(270deg, #ff9a9e, #88d3ce, #6e45e2, #ff9a9e);
+  background-size: 600% 600%;
+  animation: gradientBackground 10s ease infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 2px 12px rgba(30,30,30,0.45), 0 1px 0 #fff;
+}
+
+.opening-title {
+  font-size: 2.8rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+  text-shadow: none;
+}
+
+.opening-desc {
+  font-size: 1.2rem;
+  margin-bottom: 32px;
+  letter-spacing: 1px;
+}
+
+/* Buttons with inverted (contrary) color scheme */
+.opening-btn-group {
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.opening-btn {
+  padding: 14px 38px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 32px;
+  background: #fff;
+  color: #232526;
+  box-shadow: 0 2px 12px #38f9d755;
+  cursor: pointer;
+  transition: background 0.18s, box-shadow 0.18s, color 0.18s;
+  margin-bottom: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.opening-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(270deg, #6e45e2, #88d3ce, #ff9a9e, #6e45e2);
+  background-size: 600% 600%;
+  animation: gradientBackground 10s ease infinite;
+  opacity: 0.15;
+  z-index: 0;
+  border-radius: 32px;
+}
+
+.opening-btn.outline {
+  background: transparent;
+  color: #fff;
+  border: 2px solid #fff;
+  box-shadow: none;
+}
+
+.opening-btn:hover, .opening-btn:focus {
+  background: linear-gradient(270deg, #6e45e2, #88d3ce, #ff9a9e, #6e45e2);
+  background-size: 600% 600%;
+  animation: gradientBackground 10s ease infinite;
+  color: #fff;
+}
+
+.opening-btn.outline:hover, .opening-btn.outline:focus {
+  background: #fff;
+  color: #232526;
+}
+
+@media (max-width: 600px) {
+  .opening-title { font-size: 2rem; }
+  .opening-animation { padding: 28px 8vw 24px 8vw; }
+  .opening-btn { padding: 12px 18px; font-size: 1rem; }
+}
