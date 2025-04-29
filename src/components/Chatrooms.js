@@ -98,11 +98,15 @@ function Chatrooms() {
     useEffect(() => {
         // Only fetch chatrooms if user is authenticated
         if (user) {
+            setLoading(true); // Always show loading first
             const unsubscribe = getUserChatrooms((chatroomsList) => {
-                setChatrooms(chatroomsList);
-                setLoading(false);
+                // Always show loader for at least 1.2s for effect
+                setTimeout(() => {
+                    setChatrooms(chatroomsList);
+                    setLoading(false);
+                }, 1500);
             });
-            
+
             return () => {
                 if (unsubscribe) unsubscribe();
             };
@@ -456,7 +460,16 @@ function Chatrooms() {
 
     // AFTER all hooks are defined, THEN you can have conditional returns
     if (loading) {
-        return <div className="loading">Loading chatrooms...</div>;
+        return (
+            <div className="loading loading-caa">
+                <div className="caa-loader">
+                    <div className="caa-bubble caa-bubble1"></div>
+                    <div className="caa-bubble caa-bubble2"></div>
+                    <div className="caa-bubble caa-bubble3"></div>
+                    <span className="caa-text">Loading Chatrooms...</span>
+                </div>
+            </div>
+        );
     }
     
     return (
@@ -520,7 +533,7 @@ function Chatrooms() {
                 </div>
             </div>
             
-            <div className="chat-area">
+            <div className={`chat-area${activeChatroom ? " chat-area-animate" : ""}`}>
                 {activeChatroom ? (
                     <>
                         <div className="chat-header">
