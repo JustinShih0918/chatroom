@@ -80,7 +80,15 @@
   gap: 10px; /* Add spacing between chatroom items */
 }
 
+/* Fade-in animation for chatroom items */
+@keyframes slideFadeIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
 .chatroom-item {
+  animation: slideFadeIn 0.4s ease-out;
+  animation-fill-mode: backwards;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -170,43 +178,106 @@
   cursor: pointer;
 }
 
-/* Loading state */
-.loading {
+/* CAA Loader Animation */
+.loading-caa {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  font-size: 1.2rem;
-  color: #666;
+  background: linear-gradient(120deg, #4285f4 0%, #7f53ac 100%);
+  z-index: 9999;
 }
 
-/* Center no-active-chatroom message */
-.no-active-chatroom {
+.caa-loader {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 18px;
+}
+
+.caa-bubble {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  margin: 0 6px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fff 60%, #38f9d7 100%);
+  animation: caa-bounce 1.2s infinite;
+  opacity: 0.85;
+}
+
+.caa-bubble1 { animation-delay: 0s; }
+.caa-bubble2 { animation-delay: 0.2s; }
+.caa-bubble3 { animation-delay: 0.4s; }
+
+@keyframes caa-bounce {
+  0%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-28px); }
+}
+
+.caa-text {
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-top: 18px;
+  text-shadow: 0 2px 12px #7f53ac55;
+}
+
+/* Message panel slide-in animation */
+@keyframes chatPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.chat-area-animate {
+  animation: chatPanelIn 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.no-active-chatroom {
+  height: 50%;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
-  height: 100%;
-  padding: 20px;
+  align-items: center;
   text-align: center;
-  background-color: #f8f9fa;
+  color: #4a4a4a;
+  background: rgba(255,255,255,0.85);
+  border-radius: 18px;
+  margin: auto;
+  max-width: 420px;
+  min-height: 220px;
+  box-shadow: 0 4px 32px 0 rgba(66,133,244,0.08);
+  padding: 40px 24px 32px 24px;
+  position: relative;
+  top: 25%;
+  transform: translateY(-50%);
 }
 
 .no-active-chatroom h2 {
-  margin-top: 0;
-  margin-bottom: 15px;
+  font-size: 1.5rem;
+  font-weight: 700;
   color: #4285f4;
-  font-size: 1.8rem;
-  font-weight: 500;
-  max-width: 600px;
+  margin-bottom: 12px;
+  letter-spacing: 1px;
 }
 
 .no-active-chatroom p {
-  color: #666;
-  font-size: 1.1rem;
-  max-width: 500px;
-  line-height: 1.5;
+  font-size: 1.05rem;
+  color: #555;
+  margin: 0;
+  line-height: 1.6;
 }
+
 
 /* Responsive styles for no-active-chatroom */
 @media (max-width: 900px) {
@@ -424,69 +495,4 @@
       padding-bottom: 46px; /* Make room for the fixed input */
     }
   }
-}
-
-/* CAA Loader Animation */
-.loading-caa {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(120deg, #4285f4 0%, #7f53ac 100%);
-  z-index: 9999;
-}
-
-.caa-loader {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 18px;
-}
-
-.caa-bubble {
-  display: inline-block;
-  width: 22px;
-  height: 22px;
-  margin: 0 6px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #fff 60%, #38f9d7 100%);
-  animation: caa-bounce 1.2s infinite;
-  opacity: 0.85;
-}
-
-.caa-bubble1 { animation-delay: 0s; }
-.caa-bubble2 { animation-delay: 0.2s; }
-.caa-bubble3 { animation-delay: 0.4s; }
-
-@keyframes caa-bounce {
-  0%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-28px); }
-}
-
-.caa-text {
-  color: #fff;
-  font-size: 1.25rem;
-  font-weight: 600;
-  letter-spacing: 1px;
-  margin-top: 18px;
-  text-shadow: 0 2px 12px #7f53ac55;
-}
-
-/* Message panel slide-in animation */
-@keyframes chatPanelIn {
-  from {
-    opacity: 0;
-    transform: translateY(40px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.chat-area-animate {
-  animation: chatPanelIn 0.6s cubic-bezier(0.23, 1, 0.32, 1);
 }
