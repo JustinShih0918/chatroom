@@ -1,14 +1,17 @@
-/* Settings panel that slides in from the right */
 .settings-panel {
   position: fixed;
   top: 0;
   right: -320px; /* Start off-screen */
   width: 320px;
   height: 100vh;
-  background-color: white;
+  background-color: rgba(4, 23, 74, 0.18);
   box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   transition: right 0.3s ease-in-out;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px 0 rgba(31,38,135,0.18);
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.18);
   overflow-y: auto;
 }
 
@@ -290,7 +293,7 @@
   width: 100%;
   padding: 10px;
   background-color: #ffebee;
-  color: #d32f2f;
+  color: white;
   border: 1px solid #ffcdd2;
   border-radius: 4px;
   cursor: pointer;
@@ -301,9 +304,6 @@
   transition: background-color 0.2s;
 }
 
-.leave-button:hover {
-  background-color: #ffcdd2;
-}
 
 /* Overlay behind the settings panel */
 .settings-overlay {
