@@ -21,6 +21,7 @@ import {
 import "../styles/chatrooms.css";
 import "../styles/messages.css";
 import "../styles/settings.css";
+import { searchTenorGifs } from "./tenorService";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 function Chatrooms() {
@@ -47,8 +48,34 @@ function Chatrooms() {
     const [selectedMessage, setSelectedMessage] = useState(null);
     const [longPressTimer, setLongPressTimer] = useState(null);
     
-    // Remove unused state
-    // const [newMemberEmail, setNewMemberEmail] = useState("");
+    // gif 
+    const [showGifPicker, setShowGifPicker] = useState(false);
+    const [gifSearchTerm, setGifSearchTerm] = useState("");
+    const [gifResults, setGifResults] = useState([]);
+    const [isSearchingGifs, setIsSearchingGifs] = useState(false);
+
+    // Handler for GIF search
+    const handleGifSearch = async (e) => {
+        e.preventDefault();
+        if (!gifSearchTerm.trim()) return;
+        setIsSearchingGifs(true);
+        try {
+            const gifs = await searchTenorGifs(gifSearchTerm);
+            setGifResults(gifs);
+        } catch (err) {
+            setGifResults([]);
+        }
+        setIsSearchingGifs(false);
+    };
+
+    // Handler for sending GIF as a message
+    const handleSendGif = async (gifUrl) => {
+        if (!activeChatroom) return;
+        await sendMessage(activeChatroom.id, gifUrl); // You may want to distinguish GIFs in your message model
+        setShowGifPicker(false);
+        setGifSearchTerm("");
+        setGifResults([]);
+    };
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -373,6 +400,13 @@ function Chatrooms() {
             setLongPressTimer(null);
         }
     };
+
+    const isGifUrl = (url) => {
+        return typeof url === "string" && (
+            url.match(/\.(gif)$/i) ||
+            url.includes("tenor.com") // covers Tenor direct links
+        );
+    };
     
     // 1. Add these state variables at the top with other useState hooks:
     const [messageSearchTerm, setMessageSearchTerm] = useState("");
@@ -538,7 +572,12 @@ function Chatrooms() {
                                                 </div>
                                                 <div className="message-sender">{message.displayName}</div>
                                             </div>
-                                            <div className="message-content">{highlightSearchTerm(message.text, messageSearchTerm)}</div>
+                                            <div className="message-content">
+                                                {isGifUrl(message.text)
+                                                    ? <img src={message.text} alt="GIF" style={{maxWidth: 220, borderRadius: 8}} />
+                                                    : highlightSearchTerm(message.text, messageSearchTerm)
+                                                }
+                                            </div>
                                             <div className="message-timestamp">
                                                 {message.timestamp ? new Date(message.timestamp).toLocaleString() : 'Sending...'}
                                             </div>
@@ -556,6 +595,50 @@ function Chatrooms() {
                                 value={newMessage}
                                 onChange={(e) => setNewMessage(e.target.value)}
                             />
+                            <button
+                            type="button"
+                            className="gif-picker-toggle"
+                            onClick={() => setShowGifPicker((v) => !v)}
+                            style={{ marginLeft: 8 }}
+                        >
+                            <i className="bi bi-file-earmark-image"></i> GIF
+                        </button>
+
+                        {showGifPicker && (
+                            <div className="gif-picker-modal">
+                                <form className="gif-search-form" onSubmit={e => e.preventDefault()}>
+                                    <input
+                                        type="text"
+                                        placeholder="Search GIFs"
+                                        value={gifSearchTerm}
+                                        onChange={e => setGifSearchTerm(e.target.value)}
+                                        className="gif-search-input"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={handleGifSearch}
+                                        disabled={isSearchingGifs}
+                                    >
+                                        Search
+                                    </button>
+                                </form>
+                                <div className="gif-results">
+                                    {gifResults.map(gif => (
+                                        <img
+                                            key={gif.id}
+                                            src={gif.preview}
+                                            alt={gif.title}
+                                            className="gif-thumb"
+                                            onClick={() => handleSendGif(gif.url)}
+                                            style={{ cursor: "pointer", margin: 4, borderRadius: 6, border: "1px solid #eee" }}
+                                        />
+                                    ))}
+                                    {isSearchingGifs && <div>Loading...</div>}
+                                    {!isSearchingGifs && gifResults.length === 0 && gifSearchTerm && <div>No GIFs found.</div>}
+                                </div>
+                                <button className="close-gif-picker" onClick={() => setShowGifPicker(false)}>Close</button>
+                            </div>
+                        )}
                             <button type="submit">Send</button>
                         </form>
                     </>
