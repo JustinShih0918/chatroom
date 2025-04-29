@@ -77,10 +77,6 @@ function Chatrooms() {
         setGifResults([]);
     };
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
-
     // Add this effect to properly handle authentication state
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((currentUser) => {
@@ -104,7 +100,7 @@ function Chatrooms() {
                 setTimeout(() => {
                     setChatrooms(chatroomsList);
                     setLoading(false);
-                }, 1500);
+                }, 1200);
             });
 
             return () => {
@@ -126,9 +122,13 @@ function Chatrooms() {
         };
     }, [activeChatroom]);
 
+    // --- For scrolling to newest message when entering a chatroom ---
     useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
+        // Scroll to bottom when messages change or when entering a chatroom
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [messages, activeChatroom]);
     
     // Fetch members when active chatroom changes or settings panel opens
     useEffect(() => {
@@ -473,6 +473,7 @@ function Chatrooms() {
     }
     
     return (
+      <>
         <div className="chatrooms-container">
             <div className="sidebar">
                 <div className="sidebar-header">
@@ -882,6 +883,7 @@ function Chatrooms() {
                 </div>
             )}
         </div>
+      </>
     );
 }
 
