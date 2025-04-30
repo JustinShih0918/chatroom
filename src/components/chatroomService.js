@@ -5,7 +5,6 @@ import {
   onValue, 
   get, 
   query, 
-  orderByChild, 
   update,
   remove,
   serverTimestamp 
