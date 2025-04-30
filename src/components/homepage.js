@@ -27,6 +27,95 @@ function HomePage() {
         const mode = params.get("mode");
         if (mode === "signup") setActiveTab("signup");
         else setActiveTab("signin");
+        
+        // Generate glowing dots
+        const generateDots = () => {
+            const dotsGrid = document.querySelector('.glowing-dots-grid');
+            if (!dotsGrid) return;
+            
+            // Clear existing dots
+            dotsGrid.innerHTML = '';
+            
+            // Determine number of dots based on screen size
+            const columns = window.innerWidth <= 480 ? 8 : 
+                           window.innerWidth <= 768 ? 12 : 15;
+            const rows = window.innerWidth <= 480 ? 8 : 
+                        window.innerWidth <= 768 ? 12 : 15;
+            
+            // Calculate total dots
+            const dotCount = columns * rows;
+            
+            // Create dot elements
+            const dots = [];
+            for (let i = 0; i < dotCount; i++) {
+                const dot = document.createElement('div');
+                dot.classList.add('dot-element');
+                dot.dataset.row = Math.floor(i / columns);
+                dot.dataset.col = i % columns;
+                dotsGrid.appendChild(dot);
+                dots.push(dot);
+                
+                // Add mouseover event for proximity effect
+                dot.addEventListener('mouseover', () => {
+                    const currRow = parseInt(dot.dataset.row);
+                    const currCol = parseInt(dot.dataset.col);
+                    
+                    // First, remove any existing classes from all dots
+                    dots.forEach(d => {
+                        d.classList.remove('proximity-1', 'proximity-2', 'proximity-3', 
+                                          'proximity-4', 'proximity-5', 'dot-hovered');
+                    });
+                    
+                    // Add special class to the currently hovered dot
+                    dot.classList.add('dot-hovered');
+                    
+                    // Apply proximity classes to surrounding dots
+                    dots.forEach(d => {
+                        if (d === dot) return; // Skip the hovered dot itself
+                        
+                        // Calculate distance (Manhattan distance)
+                        const targetRow = parseInt(d.dataset.row);
+                        const targetCol = parseInt(d.dataset.col);
+                        const distance = Math.abs(currRow - targetRow) + Math.abs(currCol - targetCol);
+                        
+                        // Apply appropriate proximity class based on distance
+                        if (distance === 1) {
+                            d.classList.add('proximity-1');
+                        } else if (distance === 2) {
+                            d.classList.add('proximity-2');
+                        } else if (distance === 3) {
+                            d.classList.add('proximity-3');
+                        } else if (distance <= 5) {
+                            d.classList.add('proximity-4');
+                        } else if (distance <= 7) {
+                            d.classList.add('proximity-5');
+                        }
+                    });
+                });
+                
+                // Clear proximity effects when mouse leaves
+                dot.addEventListener('mouseleave', () => {
+                    setTimeout(() => {
+                        // Only remove if not still over another dot
+                        const hoveredDot = document.querySelector('.dot-element:hover');
+                        if (!hoveredDot) {
+                            dots.forEach(d => {
+                                d.classList.remove('proximity-1', 'proximity-2', 'proximity-3', 
+                                                  'proximity-4', 'proximity-5', 'dot-hovered');
+                            });
+                        }
+                    }, 50);
+                });
+            }
+        };
+        
+        // Generate dots initially and on window resize
+        generateDots();
+        window.addEventListener('resize', generateDots);
+        
+        return () => {
+            window.removeEventListener('resize', generateDots);
+        };
     }, [location.search]);
 
     const handleSignIn = async (e) => {
@@ -128,6 +217,7 @@ function HomePage() {
     return (
         <div className="home-container">
             <div className="blob-bg"></div>
+            <div className="glowing-dots-grid"></div>
             <div className="home-content">
                 <div className="home-header">
                     <h1>ChatVerse</h1>

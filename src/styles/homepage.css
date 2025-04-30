@@ -22,6 +22,130 @@
   100% { transform: translate(-10%, -10%) rotate(360deg); }
 }
 
+/* Updated Glowing Dots Grid Effect */
+.glowing-dots-grid {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  display: grid;
+  grid-template-columns: repeat(15, 1fr); /* Decreased from 30 to 15 */
+  grid-template-rows: repeat(15, 1fr); /* Decreased from 30 to 15 */
+  overflow: hidden;
+}
+
+/* Generate the actual dot effect using JS */
+.dot-element {
+  position: relative;
+  transition: all 500ms ease;
+  cursor: pointer;
+}
+
+.dot-element::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px; /* Increased from 4px to 6px */
+  height: 6px; /* Increased from 4px to 6px */
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  box-shadow: 
+    0 0 15px 2px rgba(66, 133, 244, 0.5),
+    0 0 30px 5px rgba(66, 133, 244, 0.2);
+  opacity: 0.6;
+  transition: all 400ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Primary hover effect for directly hovered dot - even bigger */
+.dot-element:hover::after {
+  width: 24px; /* Increased from 18px to 24px */
+  height: 24px; /* Increased from 18px to 24px */
+  background: rgba(255, 255, 255, 1);
+  opacity: 0.95;
+  box-shadow: 
+    0 0 25px 10px rgba(66, 133, 244, 0.8),
+    0 0 50px 15px rgba(66, 133, 244, 0.5);
+  transition: all 100ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Special class for the directly hovered dot */
+.dot-element.dot-hovered::after {
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 1);
+  opacity: 1;
+  box-shadow: 
+    0 0 30px 10px rgba(66, 133, 244, 0.9),
+    0 0 60px 20px rgba(66, 133, 244, 0.6);
+  z-index: 2;
+  transition: all 150ms ease-out;
+}
+
+/* Make sure this has higher specificity than the hover */
+.dot-element.dot-hovered::after {
+  animation: pulseDot 1.5s infinite alternate;
+}
+
+@keyframes pulseDot {
+  0% {
+    box-shadow: 0 0 30px 10px rgba(66, 133, 244, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 40px 15px rgba(66, 133, 244, 0.9);
+  }
+}
+
+/* Enhanced proximity classes */
+.dot-element.proximity-1::after {
+  width: 18px; /* Increased from 12px */
+  height: 18px;
+  opacity: 0.85;
+  box-shadow: 
+    0 0 20px 8px rgba(66, 133, 244, 0.75),
+    0 0 35px 10px rgba(66, 133, 244, 0.45);
+}
+
+.dot-element.proximity-2::after {
+  width: 14px; /* Increased from 8px */
+  height: 14px;
+  opacity: 0.75;
+  box-shadow: 
+    0 0 15px 6px rgba(66, 133, 244, 0.65),
+    0 0 25px 8px rgba(66, 133, 244, 0.35);
+}
+
+.dot-element.proximity-3::after {
+  width: 10px; /* Increased from 6px */
+  height: 10px;
+  opacity: 0.7;
+  box-shadow: 
+    0 0 12px 4px rgba(66, 133, 244, 0.55),
+    0 0 20px 6px rgba(66, 133, 244, 0.3);
+}
+
+/* Add two more proximity levels for wider effect */
+.dot-element.proximity-4::after {
+  width: 8px;
+  height: 8px;
+  opacity: 0.6;
+  box-shadow: 
+    0 0 10px 3px rgba(66, 133, 244, 0.45),
+    0 0 15px 5px rgba(66, 133, 244, 0.25);
+}
+
+.dot-element.proximity-5::after {
+  width: 7px;
+  height: 7px;
+  opacity: 0.55;
+  box-shadow: 
+    0 0 8px 2px rgba(66, 133, 244, 0.4),
+    0 0 12px 4px rgba(66, 133, 244, 0.2);
+}
+
 .home-container {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -38,7 +162,7 @@
 
 .home-content {
     position: relative;
-    z-index: 1;
+    z-index: 2; /* Increase from 1 to 2 to ensure it's above dots */
     width: 100%;
     max-width: 420px;
     background: rgba(220, 235, 255, 0.28);
@@ -261,6 +385,20 @@
     }
 }
 
+@media (max-width: 768px) {
+    .home-content {
+        max-width: 90vw;
+        padding: 32px 16px 24px 16px;
+    }
+    .home-header h1 {
+        font-size: 1.6rem;
+    }
+    .glowing-dots-grid {
+        grid-template-columns: repeat(12, 1fr);
+        grid-template-rows: repeat(12, 1fr);
+    }
+}
+
 @media (max-width: 600px) {
     .home-container {
         padding: 8px;
@@ -289,6 +427,18 @@
     .auth-button, .google-button {
         font-size: 0.98rem;
         padding: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .glowing-dots-grid {
+        grid-template-columns: repeat(8, 1fr);
+        grid-template-rows: repeat(8, 1fr);
+    }
+  
+    .dot-element::after {
+        width: 4px;
+        height: 4px;
     }
 }
 
