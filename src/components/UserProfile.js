@@ -6,22 +6,38 @@ import { auth, db } from "../config";
 import "../styles/userprofile.css";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
-// Import profile pictures
-import profile1 from "../media/profile/profile1.png";
-import profile2 from "../media/profile/profile2.png";
-import profile3 from "../media/profile/profile3.png";
-import profile4 from "../media/profile/profile4.png";
-import profile5 from "../media/profile/profile5.png";
-import profile6 from "../media/profile/profile6.png";
-
 // Define available profile pictures
 const profilePictures = [
-    { id: 'profile1', src: profile1, alt: 'Profile 1' },
-    { id: 'profile2', src: profile2, alt: 'Profile 2' },
-    { id: 'profile3', src: profile3, alt: 'Profile 3' },
-    { id: 'profile4', src: profile4, alt: 'Profile 4' },
-    { id: 'profile5', src: profile5, alt: 'Profile 5' },
-    { id: 'profile6', src: profile6, alt: 'Profile 6' },
+    { 
+        id: 'profile1', 
+        src: '/media/profile/profile1.png', 
+        alt: 'Profile 1' 
+    },
+    { 
+        id: 'profile2', 
+        src: '/media/profile/profile2.png', 
+        alt: 'Profile 2' 
+    },
+    { 
+        id: 'profile3', 
+        src: '/media/profile/profile3.png', 
+        alt: 'Profile 3' 
+    },
+    { 
+        id: 'profile4', 
+        src: '/media/profile/profile4.png', 
+        alt: 'Profile 4' 
+    },
+    { 
+        id: 'profile5', 
+        src: '/media/profile/profile5.png', 
+        alt: 'Profile 5' 
+    },
+    { 
+        id: 'profile6', 
+        src: '/media/profile/profile6.png', 
+        alt: 'Profile 6' 
+    },
 ];
 
 function UserProfile() {
@@ -93,10 +109,13 @@ function UserProfile() {
     };
     
     const handlePictureSelect = (pictureUrl) => {
-        setSelectedPicture(pictureUrl);
+        // Create a full URL to ensure Firebase accepts it
+        const fullUrl = new URL(pictureUrl, window.location.origin).toString();
+        
+        setSelectedPicture(fullUrl);
         setUserData({
             ...userData,
-            photoURL: pictureUrl
+            photoURL: fullUrl
         });
         setShowPictureSelection(false);
     };
