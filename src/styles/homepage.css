@@ -466,3 +466,167 @@
         font-size: 0.8rem;
     }
 }
+
+/* Add these improved responsive styles to your homepage.css file */
+
+/* Base container optimization */
+.home-container {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  overflow: hidden; /* Prevent scrolling */
+  height: 100%;
+  width: 100%;
+}
+
+/* Ultra-compact mode for very small screens */
+@media (max-height: 600px) {
+  /* Make content more compact */
+  .home-content {
+    padding: 10px 12px;
+    max-height: 95vh;
+  }
+
+  /* Shrink header */
+  .home-header {
+    margin-bottom: 8px;
+  }
+  
+  .home-header h1 {
+    font-size: 1.2rem;
+    margin-bottom: 2px;
+  }
+  
+  .tagline {
+    font-size: 0.8rem;
+  }
+  
+  /* Compress auth components */
+  .auth-tabs {
+    margin-bottom: 8px;
+  }
+  
+  .tab-button {
+    padding: 6px 0;
+    font-size: 0.9rem;
+  }
+  
+  /* Compact form */
+  .auth-form {
+    gap: 6px;
+  }
+  
+  .form-group {
+    margin-bottom: 0;
+  }
+  
+  .form-group label {
+    font-size: 0.8rem;
+    margin-bottom: 1px;
+  }
+  
+  .form-group input {
+    padding: 6px;
+    font-size: 0.9rem;
+  }
+  
+  /* Smaller buttons */
+  .auth-button {
+    padding: 6px;
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
+  
+  .divider {
+    margin: 8px 0;
+  }
+  
+  .google-button {
+    padding: 6px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Extreme small screen mode */
+@media (max-height: 500px) {
+  /* Super compact mode with horizontal layout */
+  .home-content {
+    display: flex;
+    flex-direction: row;
+    max-width: 98vw;
+    padding: 8px;
+  }
+  
+  /* Move header to the side */
+  .home-header {
+    width: 30%;
+    text-align: left;
+    margin-right: 10px;
+    margin-bottom: 0;
+  }
+  
+  /* Auth container takes remaining width */
+  .auth-container {
+    flex: 1;
+  }
+  
+  .home-header h1 {
+    font-size: 1rem;
+  }
+  
+  .tagline {
+    font-size: 0.7rem;
+  }
+  
+  /* Stack form fields horizontally */
+  .auth-form {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  
+  .form-group {
+    flex: 1 1 45%;
+    min-width: 120px;
+  }
+  
+  /* Tiny form elements */
+  .form-group label {
+    font-size: 0.7rem;
+  }
+  
+  .form-group input {
+    padding: 4px;
+    font-size: 0.8rem;
+    height: 24px;
+  }
+  
+  .auth-button {
+    padding: 4px;
+    font-size: 0.8rem;
+    margin-top: 2px;
+    height: 28px;
+  }
+}
+
+/* Dot grid adjustments for small screens */
+@media (max-height: 500px) {
+  .dot-element::after {
+    width: 3px;
+    height: 3px;
+  }
+  
+  .dot-element:hover::after,
+  .dot-element.dot-hovered::after {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .dot-element.proximity-1::after {
+    width: 8px;
+    height: 8px;
+  }
+}
