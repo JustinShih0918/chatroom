@@ -117,8 +117,8 @@ export const showMessageNotification = (
   // Create notification options with sanitized content
   const options = {
     body: messageWithTime,
-    icon: photoURL || '/logo192.png',
-    badge: '/logo192.png',
+    icon: photoURL || '/icon.png',
+    badge: '/icon.png',
     tag: `chatroom-${chatroomId}`,
     requireInteraction: false,
     silent: false,
