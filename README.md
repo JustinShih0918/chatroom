@@ -29,7 +29,7 @@
 
 7. Click on a chatroom to enter it.  
    Then, click the **Settings** icon at the top right to add friends to the chatroom.
-   - Enter a keyword (for example, searching for `Justin` will find my account).
+   - Enter a username (for example, searching for `Justin` will find my account).
    - Click the user to add them.
 
    ![alt](ImgForMD/image-3.png)  
