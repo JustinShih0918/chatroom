@@ -9,7 +9,6 @@ import {
 import { ref, set, serverTimestamp, get, update } from "firebase/database";
 import { auth, db } from "../config";
 import "../styles/HomePage.css";
-// Import Bootstrap icons
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 function HomePage() {
@@ -45,7 +44,6 @@ function HomePage() {
             // Calculate total dots
             const dotCount = columns * rows;
             
-            // Create dot elements
             const dots = [];
             for (let i = 0; i < dotCount; i++) {
                 const dot = document.createElement('div');
@@ -55,30 +53,25 @@ function HomePage() {
                 dotsGrid.appendChild(dot);
                 dots.push(dot);
                 
-                // Add mouseover event for proximity effect
                 dot.addEventListener('mouseover', () => {
                     const currRow = parseInt(dot.dataset.row);
                     const currCol = parseInt(dot.dataset.col);
                     
-                    // First, remove any existing classes from all dots
                     dots.forEach(d => {
                         d.classList.remove('proximity-1', 'proximity-2', 'proximity-3', 
                                           'proximity-4', 'proximity-5', 'dot-hovered');
                     });
                     
-                    // Add special class to the currently hovered dot
                     dot.classList.add('dot-hovered');
                     
-                    // Apply proximity classes to surrounding dots
                     dots.forEach(d => {
-                        if (d === dot) return; // Skip the hovered dot itself
+                        if (d === dot) return;
                         
-                        // Calculate distance (Manhattan distance)
+                        // Calculate distance
                         const targetRow = parseInt(d.dataset.row);
                         const targetCol = parseInt(d.dataset.col);
                         const distance = Math.abs(currRow - targetRow) + Math.abs(currCol - targetCol);
                         
-                        // Apply appropriate proximity class based on distance
                         if (distance === 1) {
                             d.classList.add('proximity-1');
                         } else if (distance === 2) {
@@ -93,10 +86,8 @@ function HomePage() {
                     });
                 });
                 
-                // Clear proximity effects when mouse leaves
                 dot.addEventListener('mouseleave', () => {
                     setTimeout(() => {
-                        // Only remove if not still over another dot
                         const hoveredDot = document.querySelector('.dot-element:hover');
                         if (!hoveredDot) {
                             dots.forEach(d => {
@@ -170,7 +161,7 @@ function HomePage() {
         setLoading(false);
     };
 
-    // Also update Google sign-in to include the same fields
+    // update Google sign-in to include the same fields
     const handleGoogleSignIn = async () => {
         setError("");
         setLoading(true);
@@ -185,14 +176,11 @@ function HomePage() {
             const snapshot = await get(userRef);
             
             if (snapshot.exists()) {
-                // Update login timestamp if user exists
                 await update(userRef, {
                     lastLogin: serverTimestamp(),
-                    // Ensure email is updated in case it changed in Google account
                     email: user.email
                 });
             } else {
-                // Store new user data
                 await set(userRef, {
                     email: user.email,
                     displayName: user.displayName || user.email.split('@')[0],
@@ -283,7 +271,6 @@ function HomePage() {
                                 onClick={handleGoogleSignIn}
                                 disabled={loading}
                             >
-                                {/* Replace the img with Bootstrap icon */}
                                 <i className="bi bi-google google-icon"></i>
                                 Sign in with Google
                             </button>

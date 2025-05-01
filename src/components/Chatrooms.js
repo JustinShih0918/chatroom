@@ -12,7 +12,7 @@ import {
     searchUsers,
     listenToChatroomMembers,
     unsendMessage,
-    searchMessages, // <-- Import the searchMessages function
+    searchMessages,
 } from "../components/chatroomService";
 import { 
   initializeNotifications, 
@@ -25,7 +25,6 @@ import { searchTenorGifs } from "./tenorService";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 function Chatrooms() {
-    // All state hooks first (you already have these at the top)
     const [members, setMembers] = useState([]);
     const navigate = useNavigate();
     const [chatrooms, setChatrooms] = useState([]);
@@ -43,7 +42,6 @@ function Chatrooms() {
     const messagesEndRef = React.useRef(null);
     const contextMenuRef = React.useRef(null);
 
-    // Move context menu states here - before any conditional returns
     const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 });
     const [selectedMessage, setSelectedMessage] = useState(null);
     const [longPressTimer, setLongPressTimer] = useState(null);
@@ -71,13 +69,12 @@ function Chatrooms() {
     // Handler for sending GIF as a message
     const handleSendGif = async (gifUrl) => {
         if (!activeChatroom) return;
-        await sendMessage(activeChatroom.id, gifUrl); // You may want to distinguish GIFs in your message model
+        await sendMessage(activeChatroom.id, gifUrl); 
         setShowGifPicker(false);
         setGifSearchTerm("");
         setGifResults([]);
     };
 
-    // Add this effect to properly handle authentication state
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((currentUser) => {
             if (currentUser) {
@@ -96,7 +93,6 @@ function Chatrooms() {
         if (user) {
             setLoading(true); // Always show loading first
             const unsubscribe = getUserChatrooms((chatroomsList) => {
-                // Always show loader for at least 1.2s for effect
                 setTimeout(() => {
                     setChatrooms(chatroomsList);
                     setLoading(false);
@@ -107,7 +103,7 @@ function Chatrooms() {
                 if (unsubscribe) unsubscribe();
             };
         }
-    }, [user]); // Changed dependency from navigate to user
+    }, [user]); 
     
     useEffect(() => {
         let unsubscribe;
@@ -122,9 +118,8 @@ function Chatrooms() {
         };
     }, [activeChatroom]);
 
-    // --- For scrolling to newest message when entering a chatroom ---
+    // scrolling to newest message when entering a chatroom ---
     useEffect(() => {
-        // Scroll to bottom when messages change or when entering a chatroom
         if (messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
         }
@@ -160,7 +155,7 @@ function Chatrooms() {
         
         try {
             setError("");
-            await createChatroom(newChatroomName, newChatroomDescription); // Remove variable assignment
+            await createChatroom(newChatroomName, newChatroomDescription); 
             setNewChatroomName("");
             setNewChatroomDescription("");
             setShowNewChatroomForm(false);
@@ -255,7 +250,6 @@ function Chatrooms() {
                 setActiveChatroom(null);
                 setShowSettingsPanel(false);
                 
-                // Show appropriate success message
                 if (isCreator && isOnlyMember) {
                     setError("Chatroom deleted successfully.");
                 } else {
@@ -265,7 +259,6 @@ function Chatrooms() {
                 setTimeout(() => setError(""), 3000);
             } catch (error) {
                 console.error("Leave chatroom error:", error);
-                // Handle even permission errors gracefully
                 if (error.message.includes("PERMISSION_DENIED")) {
                     setActiveChatroom(null);
                     setShowSettingsPanel(false);
@@ -286,11 +279,10 @@ function Chatrooms() {
     useEffect(() => {
       // Auto-request notification permission when user is authenticated
       if (user) {
-        // Small delay to not show the permission dialog immediately after login
         const timer = setTimeout(async () => {
           const enabled = await initializeNotifications();
           setNotificationsEnabled(enabled);
-        }, 2000); // 2 second delay for better user experience
+        }, 2000);
         
         return () => clearTimeout(timer);
       }
@@ -304,11 +296,10 @@ function Chatrooms() {
         }
     }, [chatrooms]);
     
-    // Setup message notification listeners - FIXED VERSION
+    // Setup message notification listeners
     useEffect(() => {
-        let unsubscribe = () => {}; // Default no-op cleanup function
+        let unsubscribe = () => {}; 
         
-        // Move the conditional check inside the effect
         if (user && notificationsEnabled && chatrooms.length) {
             unsubscribe = setupMessageNotifications(
                 chatrooms,
@@ -325,26 +316,21 @@ function Chatrooms() {
         };
     }, [user, chatrooms, activeChatroom, notificationsEnabled, handleNotificationClick]);
     
-    // Update the handleMessageContextMenu function
     const handleMessageContextMenu = (event, message) => {
         // Only show context menu on user's own messages
         if (message.userId === auth.currentUser?.uid) {
-            // Prevent default browser context menu
             event.preventDefault();
-            // Stop propagation to avoid immediate closure
             event.stopPropagation();
             
-            // Get window dimensions and cursor position
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
             const clickX = event.pageX;
             const clickY = event.pageY;
             
-            // Context menu dimensions (approximate)
             const menuWidth = 180;
             const menuHeight = 50;
             
-            // Calculate position, ensuring menu stays visible on screen
+            // Calculate position
             const x = (clickX + menuWidth > windowWidth) 
                 ? windowWidth - menuWidth - 10 
                 : clickX;
@@ -353,19 +339,17 @@ function Chatrooms() {
                 ? windowHeight - menuHeight - 10
                 : clickY;
             
-            // Show our custom context menu at calculated position
             setContextMenu({
                 visible: true,
                 x: x,
                 y: y
             });
             
-            // Store which message was clicked
             setSelectedMessage(message);
         }
     };
     
-    // Add function to handle unsend message action
+    // unsend message action
     const handleUnsendMessage = async () => {
         if (!selectedMessage || !activeChatroom) return;
         
@@ -379,7 +363,7 @@ function Chatrooms() {
         }
     };
     
-    // Add these handlers for touch devices
+    // touch devices
     const handleTouchStart = (e, message) => {
         // Only for user's own messages
         if (message.userId === auth.currentUser?.uid) {
@@ -391,7 +375,7 @@ function Chatrooms() {
                     y: e.touches[0].pageY
                 });
                 setSelectedMessage(message);
-            }, 800); // 800ms long press
+            }, 800);
             
             setLongPressTimer(timer);
         }
@@ -408,22 +392,19 @@ function Chatrooms() {
     const isGifUrl = (url) => {
         return typeof url === "string" && (
             url.match(/\.(gif)$/i) ||
-            url.includes("tenor.com") // covers Tenor direct links
+            url.includes("tenor.com")
         );
     };
     
-    // 1. Add these state variables at the top with other useState hooks:
     const [messageSearchTerm, setMessageSearchTerm] = useState("");
     const [messageSearchResults, setMessageSearchResults] = useState([]);
     const [isSearchingMessages, setIsSearchingMessages] = useState(false);
     const [highlightedMessageId, setHighlightedMessageId] = useState(null);
 
-    // 2. Add this function to search messages (put this with your other handlers):
     const handleMessageSearch = async () => {
         if (!messageSearchTerm.trim() || !activeChatroom) return;
         setIsSearchingMessages(true);
         try {
-            // You need to implement searchMessages in chatroomService.js
             const results = await searchMessages(activeChatroom.id, messageSearchTerm);
             setMessageSearchResults(results);
         } catch (error) {
@@ -432,7 +413,6 @@ function Chatrooms() {
         setIsSearchingMessages(false);
     };
 
-    // 3. Add this function to jump to a message:
     const handleSelectSearchResult = (message) => {
         setHighlightedMessageId(message.id);
         const el = document.getElementById(`message-${message.id}`);
@@ -447,7 +427,6 @@ function Chatrooms() {
         setShowSettingsPanel(false);
     };
 
-    // 4. Highlight search term in results:
     const highlightSearchTerm = (text, searchTerm) => {
         if (!searchTerm) return text;
         const parts = text.split(new RegExp(`(${searchTerm})`, 'gi'));
@@ -458,7 +437,6 @@ function Chatrooms() {
         );
     };
 
-    // AFTER all hooks are defined, THEN you can have conditional returns
     if (loading) {
         return (
             <div className="loading loading-caa">
@@ -664,7 +642,6 @@ function Chatrooms() {
                 )}
             </div>
             
-            {/* Settings panel that slides in from the right */}
             <div className={`settings-panel ${showSettingsPanel ? 'show' : ''}`}>
                 <div className="settings-header">
                     <h3>Chatroom Settings</h3>
@@ -687,7 +664,6 @@ function Chatrooms() {
                                     {members.map((member) => (
                                         <li key={member.uid} className="member-item">
                                             <div className="member-info">
-                                                {/* Show profile photo if available */}
                                                 {member.photoURL ? (
                                                     <img 
                                                         src={member.photoURL} 
@@ -779,7 +755,6 @@ function Chatrooms() {
                         </div>
                     </div>
 
-                    {/* 5. In your settings panel JSX, add this section (before Danger Zone): */}
                     <div className="settings-section">
                         <h4><i className="bi bi-search"></i> Search Messages</h4>
                         <div className="message-search-container">
@@ -845,7 +820,6 @@ function Chatrooms() {
                 </div>
             </div>
             
-            {/* Overlay that appears behind the settings panel */}
             {showSettingsPanel && (
                 <div 
                     className="settings-overlay"
@@ -860,7 +834,6 @@ function Chatrooms() {
                 </div>
             )}
 
-            {/* Message context menu */}
             {contextMenu.visible && (
                 <div 
                     ref={contextMenuRef}

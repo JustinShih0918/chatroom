@@ -5,20 +5,17 @@ import {
 
 /**
  * Initialize the notification system
- * @returns {Promise<boolean>} Whether notifications are enabled
+ * @returns {Promise<boolean>} 
  */
 export const initializeNotifications = async () => {
-  // If permission is already granted, return true
   if (Notification.permission === 'granted') {
     return true;
   }
   
-  // If permission is denied, return false without prompting again
   if (Notification.permission === 'denied') {
     return false;
   }
   
-  // Request permission using browser's native dialog
   try {
     const permission = await Notification.requestPermission();
     return permission === 'granted';
@@ -48,7 +45,6 @@ export const setupMessageNotifications = (
     return () => {};
   }
 
-  // Track last seen message ID for each chatroom to avoid duplicate notifications
   const lastSeenMessageIds = {};
   
   // Set up listeners for each chatroom
@@ -70,21 +66,19 @@ export const setupMessageNotifications = (
       
       // Check if we should show notification
       if (shouldShowNotification(activeChatroomId, chatroom.id)) {
-        // Show the notification with timestamp
         showMessageNotification(
           lastMessage.displayName,
           chatroom.name,
           lastMessage.text,
           chatroom.id,
           lastMessage.photoURL,
-          lastMessage.timestamp, // Pass the timestamp to the notification function
+          lastMessage.timestamp,
           onNotificationClick
         );
       }
     });
   });
   
-  // Return cleanup function
   return () => {
     unsubscribes.forEach(unsubscribe => {
       if (typeof unsubscribe === 'function') {

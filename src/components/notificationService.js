@@ -1,5 +1,3 @@
-// Chrome Notification Service for Chatroom App
-
 /**
  * Check if browser supports notifications
  * @returns {boolean} Whether notifications are supported
@@ -45,11 +43,8 @@ export const requestNotificationPermission = async () => {
 const sanitizeText = (text) => {
   if (!text) return '';
   
-  // Create a temporary div element (not added to DOM)
   const temp = document.createElement('div');
-  // Set text as textContent which automatically escapes HTML
   temp.textContent = text;
-  // Return the escaped text
   return temp.textContent;
 };
 
@@ -63,7 +58,6 @@ const formatTimestamp = (timestamp) => {
   
   const date = new Date(timestamp);
   
-  // Format time as HH:MM
   const hours = date.getHours().toString().padStart(2, '0');
   const minutes = date.getMinutes().toString().padStart(2, '0');
   
@@ -90,31 +84,25 @@ export const showMessageNotification = (
   timestamp = null,
   onClickCallback = null
 ) => {
-  // Check permission first
   if (Notification.permission !== 'granted') {
     console.log("Notification permission not granted");
     return null;
   }
 
-  // Sanitize all text inputs to prevent XSS
   const safeSenderName = sanitizeText(senderName);
   const safeChatroomName = sanitizeText(chatroomName);
   const safeMessage = sanitizeText(message);
   
-  // Format the timestamp
   const timeStr = formatTimestamp(timestamp);
 
-  // Truncate message if too long
   const truncatedMessage = safeMessage.length > 50 
     ? safeMessage.substring(0, 47) + '...' 
     : safeMessage;
     
-  // Add timestamp to message if available
   const messageWithTime = timeStr 
     ? `[${timeStr}] ${truncatedMessage}` 
     : truncatedMessage;
 
-  // Create notification options with sanitized content
   const options = {
     body: messageWithTime,
     icon: photoURL || '/icon.png',
@@ -128,7 +116,6 @@ export const showMessageNotification = (
     }
   };
 
-  // Create the notification with sanitized title
   const notification = new Notification(`${safeSenderName} in ${safeChatroomName}`, options);
 
   // Add click handler
@@ -160,7 +147,6 @@ export const isAppInFocus = () => {
  * @returns {boolean} Whether notification should be shown
  */
 export const shouldShowNotification = (currentChatroomId, messageChatroomId) => {
-  // Don't show notification if app is in focus and user is in the same chatroom
   if (isAppInFocus() && currentChatroomId === messageChatroomId) {
     return false;
   }

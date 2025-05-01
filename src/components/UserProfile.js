@@ -6,7 +6,6 @@ import { auth, db } from "../config";
 import "../styles/userprofile.css";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
-// Define available profile pictures
 const profilePictures = [
     { 
         id: 'profile1', 
@@ -84,7 +83,6 @@ function UserProfile() {
                     
                     setOriginalEmail(auth.currentUser.email || "");
                     
-                    // Set the selected picture if the user already has one
                     if (data.photoURL) {
                         setSelectedPicture(data.photoURL);
                     }
@@ -109,7 +107,6 @@ function UserProfile() {
     };
     
     const handlePictureSelect = (pictureUrl) => {
-        // Create a full URL to ensure Firebase accepts it
         const fullUrl = new URL(pictureUrl, window.location.origin).toString();
         
         setSelectedPicture(fullUrl);
@@ -130,7 +127,6 @@ function UserProfile() {
             const user = auth.currentUser;
             if (!user) throw new Error("User not authenticated");
             
-            // Validate age if provided
             let ageValue = null;
             if (userData.age) {
                 ageValue = parseInt(userData.age);
@@ -139,18 +135,15 @@ function UserProfile() {
                 }
             }
             
-            // Validate phone number if provided - allowing numbers, spaces, hyphens, parentheses, and plus signs
+            // Validate phone number
             if (userData.phoneNumber && !/^[0-9+\-\s()]{7,20}$/.test(userData.phoneNumber)) {
                 throw new Error("Phone number should only contain numbers, spaces, hyphens, parentheses, and plus signs");
             }
             
-            // Check if email has changed
             if (userData.email !== originalEmail) {
                 try {
-                    // Update email in Firebase Auth
                     await updateEmail(user, userData.email);
                 } catch (error) {
-                    // If email update fails, it might require re-authentication
                     if (error.code === 'auth/requires-recent-login') {
                         throw new Error("Email change requires recent login. Please sign out and sign in again before changing your email.");
                     } else {
@@ -159,13 +152,11 @@ function UserProfile() {
                 }
             }
             
-            // Update profile in Firebase Auth
             await updateProfile(user, {
                 displayName: userData.displayName,
                 photoURL: userData.photoURL
             });
             
-            // Update user profile in database
             await update(ref(db, `users/${user.uid}`), {
                 displayName: userData.displayName,
                 photoURL: userData.photoURL,
@@ -178,7 +169,7 @@ function UserProfile() {
             });
             
             setSuccess("Profile updated successfully!");
-            setOriginalEmail(userData.email); // Update original email
+            setOriginalEmail(userData.email); 
             setTimeout(() => setSuccess(""), 3000);
         } catch (error) {
             setError("Failed to update profile: " + error.message);

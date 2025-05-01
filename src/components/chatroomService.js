@@ -53,7 +53,7 @@ export const createChatroom = async (name, description) => {
     createdBy: user.uid,
     createdAt: serverTimestamp(),
     members: {
-      [user.uid]: true // Add creator as first member
+      [user.uid]: true 
     }
   };
   
@@ -76,7 +76,6 @@ export const getChatroomMessages = (chatroomId, callback) => {
     
     // Sort messages by timestamp
     messages.sort((a, b) => {
-      // Handle case where timestamp might be null
       const timestampA = a.timestamp || 0;
       const timestampB = b.timestamp || 0;
       return timestampA - timestampB;
@@ -93,7 +92,6 @@ export const sendMessage = async (chatroomId, text) => {
   const user = auth.currentUser;
   if (!user) throw new Error("User must be logged in");
   
-  // Get the latest user profile information
   const userRef = ref(db, `users/${user.uid}`);
   const userSnapshot = await get(userRef);
   const userData = userSnapshot.exists() ? userSnapshot.val() : {};
@@ -117,7 +115,6 @@ export const addMemberToChatroom = async (chatroomId, email) => {
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error("You must be logged in");
   
-  // First verify that the current user is a member of the chatroom
   const chatroomRef = ref(db, `chatrooms/${chatroomId}`);
   const chatroomSnapshot = await get(chatroomRef);
   
@@ -127,12 +124,10 @@ export const addMemberToChatroom = async (chatroomId, email) => {
   
   const chatroom = chatroomSnapshot.val();
   
-  // Check if current user is a member
   if (!chatroom.members || !chatroom.members[currentUser.uid]) {
     throw new Error("You must be a member of this chatroom to add others");
   }
   
-  // Find user by email
   const usersRef = ref(db, "users");
   const snapshot = await get(query(usersRef));
   
@@ -148,7 +143,6 @@ export const addMemberToChatroom = async (chatroomId, email) => {
     throw new Error("User not found. Make sure they have registered.");
   }
   
-  // Check if user is already a member
   if (chatroom.members && chatroom.members[userId]) {
     throw new Error("User is already a member of this chatroom");
   }
@@ -165,7 +159,6 @@ export const leaveChatroom = async (chatroomId) => {
   if (!user) throw new Error("User must be logged in");
   
   try {
-    // First, check if user is creator and only member
     const chatroomRef = ref(db, `chatrooms/${chatroomId}`);
     const snapshot = await get(chatroomRef);
     
@@ -178,32 +171,24 @@ export const leaveChatroom = async (chatroomId) => {
     const isCreator = chatroom.createdBy === user.uid;
     const isOnlyMember = members.length === 1 && members.includes(user.uid);
     
-    // If user is creator and only member, delete chatroom members first
     if (isCreator && isOnlyMember) {
       try {
-        // First remove the members node
         await remove(ref(db, `chatrooms/${chatroomId}/members`));
         
-        // Then remove the messages
         await remove(ref(db, `messages/${chatroomId}`));
         
-        // Finally remove the chatroom
         await remove(chatroomRef);
         
         return;
       } catch (deleteError) {
         console.error("Error during chatroom deletion: ", deleteError);
-        // Even if deletion fails partially, continue with member removal
       }
     }
     
-    // Otherwise, proceed with normal leave process
     const memberRef = ref(db, `chatrooms/${chatroomId}/members/${user.uid}`);
     await remove(memberRef);
     
-    // If user was creator but there are other members, transfer ownership
     if (isCreator && members.length > 1) {
-      // Find another member who is not the current user
       const newOwner = members.find(memberId => memberId !== user.uid);
       if (newOwner) {
         await update(chatroomRef, { createdBy: newOwner });
@@ -215,7 +200,6 @@ export const leaveChatroom = async (chatroomId) => {
   }
 };
 
-// Get all members of a chatroom
 export const getChatroomMembers = async (chatroomId) => {
   const chatroomRef = ref(db, `chatrooms/${chatroomId}`);
   const chatroomSnapshot = await get(chatroomRef);
@@ -252,7 +236,6 @@ export const getChatroomMembers = async (chatroomId) => {
   return members;
 };
 
-// Add this new function
 export const listenToChatroomMembers = (chatroomId, callback) => {
   const membersRef = ref(db, `chatrooms/${chatroomId}/members`);
   
@@ -265,7 +248,6 @@ export const listenToChatroomMembers = (chatroomId, callback) => {
     const memberIds = Object.keys(snapshot.val() || {});
     const members = [];
     
-    // Get each member's data
     for (const uid of memberIds) {
       const userRef = ref(db, `users/${uid}`);
       const userSnapshot = await get(userRef);
@@ -287,7 +269,7 @@ export const listenToChatroomMembers = (chatroomId, callback) => {
   return unsubscribe;
 };
 
-// Add this function to search users by username or email
+// search users by username or email
 export const searchUsers = async (searchTerm) => {
   if (!searchTerm || searchTerm.trim().length < 2) {
     return [];
@@ -306,10 +288,8 @@ export const searchUsers = async (searchTerm) => {
     const userData = childSnapshot.val();
     const uid = childSnapshot.key;
     
-    // Don't include the current user in search results
     if (uid === user.uid) return;
     
-    // Search in username (displayName) and email
     const displayName = (userData.displayName || "").toLowerCase();
     const email = (userData.email || "").toLowerCase();
     
@@ -326,7 +306,6 @@ export const searchUsers = async (searchTerm) => {
   return results;
 };
 
-// Add to chatroomService.js - add this function to the exports
 export const searchMessages = async (chatroomId, searchTerm) => {
   if (!searchTerm || searchTerm.trim().length === 0) {
     return [];
@@ -372,7 +351,7 @@ export const searchMessages = async (chatroomId, searchTerm) => {
     }
   });
   
-  // Sort results by timestamp (newest first)
+  // Sort results by timestamp 
   results.sort((a, b) => {
     const timestampA = a.timestamp || 0;
     const timestampB = b.timestamp || 0;
@@ -382,12 +361,11 @@ export const searchMessages = async (chatroomId, searchTerm) => {
   return results;
 };
 
-// Add this function to allow users to unsend their messages
+// unsend messages
 export const unsendMessage = async (chatroomId, messageId) => {
   const user = auth.currentUser;
   if (!user) throw new Error("User must be logged in");
   
-  // First verify that this is the user's own message
   const messageRef = ref(db, `messages/${chatroomId}/${messageId}`);
   const snapshot = await get(messageRef);
   
@@ -397,11 +375,9 @@ export const unsendMessage = async (chatroomId, messageId) => {
   
   const message = snapshot.val();
   
-  // Only allow users to delete their own messages
   if (message.userId !== user.uid) {
     throw new Error("You can only unsend your own messages");
   }
   
-  // Delete the message
   await remove(messageRef);
 };
