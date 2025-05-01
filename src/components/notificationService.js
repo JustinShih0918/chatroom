@@ -84,6 +84,8 @@ export const showMessageNotification = (
   timestamp = null,
   onClickCallback = null
 ) => {
+  console.log("Notification permission:", Notification.permission);
+  
   if (Notification.permission !== 'granted') {
     console.log("Notification permission not granted");
     return null;
@@ -105,8 +107,8 @@ export const showMessageNotification = (
 
   const options = {
     body: messageWithTime,
-    icon: photoURL || '/icon.png',
-    badge: '/icon.png',
+    icon: photoURL || `${window.location.origin}/logo192.png`,
+    badge: `${window.location.origin}/logo192.png`,
     tag: `chatroom-${chatroomId}`,
     requireInteraction: false,
     silent: false,
@@ -116,20 +118,26 @@ export const showMessageNotification = (
     }
   };
 
-  const notification = new Notification(`${safeSenderName} in ${safeChatroomName}`, options);
+  try {
+    const notification = new Notification(`${safeSenderName} in ${safeChatroomName}`, options);
+    console.log("Notification created successfully");
 
-  // Add click handler
-  notification.onclick = function() {
-    window.focus();
-    notification.close();
-    
-    // Run callback if provided
-    if (typeof onClickCallback === 'function') {
-      onClickCallback(chatroomId);
-    }
-  };
+    // Add click handler
+    notification.onclick = function() {
+      window.focus();
+      notification.close();
+      
+      // Run callback if provided
+      if (typeof onClickCallback === 'function') {
+        onClickCallback(chatroomId);
+      }
+    };
 
-  return notification;
+    return notification;
+  } catch (error) {
+    console.error("Error creating notification:", error);
+    return null;
+  }
 };
 
 /**
